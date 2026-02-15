@@ -3,14 +3,14 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "auto-judge-starterkit"
+name = "prefnugget-starterkit"
 version = "0.3.2"
-description = "Example AutoJudge implementations for building custom judges"
+description = "Prefnugget AutoJudge implementations from starterkit"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
 authors = [
-    {name = "TREC AutoJudge Team"}
+    {name = "Laura Dietz"}
 ]
 keywords = ["trec", "autojudge", "rag", "evaluation", "ir"]
 classifiers = [
@@ -29,6 +29,8 @@ classifiers = [
 dependencies = [
     "autojudge-base>=0.3.2",
     "tqdm>=4.0",
+    "minima-llm>=0.2.0",
+    "dspy>=0.3.0",
 ]
 
 [project.optional-dependencies]
@@ -36,23 +38,13 @@ test = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
 ]
-minima-llm = [
-    "minima-llm>=0.2.0",
-]
-pyterrier = [
-    "python-terrier>=0.10",
-    "tira>=0.0.100",
-]
 evaluate = [
     "autojudge-evaluate>=0.3.2",
 ]
-all = [
-    "auto-judge-starterkit[minima-llm,pyterrier,evaluate,test]",
-]
 
 [project.urls]
-Homepage = "https://github.com/trec-autojudge/auto-judge-starterkit"
-Repository = "https://github.com/trec-autojudge/auto-judge-starterkit"
+Homepage = "https://anonymous.4open.science/r/too-many-questions/"
+Repository = "https://github.com/lausibinsel-dev/too-many-questions"
 
 [tool.setuptools.packages.find]
 where = ["."]

@@ -30,7 +30,7 @@ dependencies = [
     "autojudge-base>=0.3.2",
     "tqdm>=4.0",
     "minima-llm>=0.2.0",
-    "dspy>=0.3.0",
+    "dspy>=3.0",
 ]
 
 [project.optional-dependencies]

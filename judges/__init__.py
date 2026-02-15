@@ -1,1 +1,1 @@
-# AutoJudge Starterkit - Example Judges
+# PrefNugget AutoJudge implementations

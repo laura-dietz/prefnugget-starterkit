@@ -1,366 +1,294 @@
-# Auto-Judge Starterkit
+# PrefNugget AutoJudge
 
-A forkable template repository with example Auto-Judge implementations for building custom judges.
+Nugget-based LLM judge implementations for evaluating RAG systems, as described in our paper ["Too Many Questions?"](https://anonymous.4open.science/r/too-many-questions/).
 
-
-
-<p align="center">
-   <img width=120px src="https://trec-auto-judge.cs.unh.edu/media/trec-auto-judge-logo-small.png">
-   <br/>
-   <br/>
-   <a href="https://github.com/trec-auto-judge/auto-judge-starterkit/actions/workflows/tests.yml">
-   <img alt="Tests" src="https://github.com/trec-auto-judge/auto-judge-starterkit/actions/workflows/tests.yml/badge.svg"/>
-   </a>
-   <a href="tests">
-   <img alt="Coverage" src="tests/coverage.svg"/>
-   </a>
-   <br>
-   <a href="https://trec-auto-judge.cs.unh.edu/">Web</a> &nbsp;|&nbsp;
-   <a href="https://trec-auto-judge.cs.unh.edu/TREC_Auto_Judge.pdf">Proposal</a>
-</p>
-
-This repository contains the code used for evaluation and approaches for the TREC Auto-Judge shared tasks.
-
-- [judges](judges/) the Auto-Judge implementations
-
-
-We are developing a step-by-step guide on how to submit at [documentation/README.md](documentation/README.md).
-
-## What is TREC AutoJudge?
-
-
-TREC Auto-Judge offers the first rigorous, cross-task benchmark for
-Large-Language-Model judges.
-
-Large-Language-Model judges have emerged as a pragmatic solution when
-manual relevance assessment is costly or infeasible. However, recent
-studies reveal wide variation in accuracy across tasks, prompts, and
-model sizes.
-
-Currently, shared task organizers choose an LLM judge per track ad
-hoc, risking inconsistent baselines and hidden biases.
-
-Auto-Judge provides a test bed for comparing different LLM judge ideas 
-across several tasks and correlating results against manually created relevance
-judgments. AutoJudge provides a testbed to study emerging evaluation approaches,
-as well as vulnerabilities of LLM judges, and the efficacy of safeguards for
-those vulnerabilities.
-
-This Auto-Judge evaluation script standardizes data handling and evaluation
-across multiple shared tasks/TREC tracks that rely on LLM judging and
-provides a centralized, comparative evaluation of LLM judges under realistic
-conditions.
-
-
-
-## What is this code for?
-
-This project provides a means to evaluate AutoJudge approaches and provide a system ranking / leaderboard.
-
-It will be used by TREC AutoJudge coordinators to score submissions. We encourage prospective participants to run this locally for method development.
-
-This code will handle obtaining data sets (akin to `ir_datasets`), input/output and format conversions, and evaluation measures. 
-
-
+Built on the [TREC AutoJudge](https://trec-auto-judge.cs.unh.edu/) framework.
 
 ## Quick Start
 
-### Installation
-
-1. Fork this repository
-2. Clone
-3. Create and activate venv
-```
-  uv venv
-  source .venv/bin/activate   # Use this to restart your session
-```
-4. Minimal install via `uv pip`  (`pip` should also work)
-```
-uv pip install -e .
-```
-
-4. Optional: installation with all extra tools (includes `auto-judge-evaluate`  )
-```
-uv pip install -e ".[all]"
-```
-
-
-
-#### Selecting Tools and Dependencies
-
- `uv pip install -e ".[all]"` installs all of the below.
- 
-If you want to be selective in installing tools
-
-* Auto-Judge Meta-Evaluation tools   `uv pip install -e ".[evaluate]"`
-* Lightweight batteries-included LLM client (used by TinyJudge)   `uv pip install -e ".[minima-llm]"`
-* PyTerrier retrieval  (used by PyTerrier retrieval judge) `uv pip install -e ".[pyterrier]"`
-* Pytest unittest infrastructure `uv pip install -e ".[test]"  `
-
-### Add your own Dependencies
-
-Add your own dependencies in `pyproject.toml` under `[project] > dependencies`. 
-
-After modification fetch dependencies, replacing `all` with selected tools and adding  `--refresh` to avoid stale package caches
-
-```
-uv pip install -e ".[all]" --refresh
-```
-
-#### Meta-Evaluation 
-When installed with `[evaluate]`, the Auto-Judge meta-evaluation package provides CLI commands for
-* leaderboard correlation: `auto-judge-evaluate  meta-evaluate --help`  
-* inter-annotator agreement: `auto-judge-evaluate  qrel-evaluate --help`
-* format conversion: `auto-judge-evaluate  eval-result --help`.
-
-See the [autojudge-evaluate README](https://github.com/trec-auto-judge/auto-judge-evaluate#readme)  and built-in `--help`
-
-
-
-### Implement Your Own Judge
-
- A judge is any class with a `judge()` method:
-
-```python
-from autojudge_base import Leaderboard, LeaderboardBuilder, LeaderboardSpec, MeasureSpec
-
-MY_SPEC = LeaderboardSpec(measures=(MeasureSpec("MY_SCORE"),))
-
-class MyJudge:
-    def judge(self, rag_responses, rag_topics, llm_config, **kwargs) -> Leaderboard:
-        builder = LeaderboardBuilder(MY_SPEC)
-
-        for response in rag_responses:
-            score = evaluate_response(response)  # your logic here
-            builder.add(
-                run_id=response.metadata.run_id,
-                topic_id=response.metadata.topic_id,
-                values={"MY_SCORE": score},
-            )
-
-        topic_ids = [t.request_id for t in rag_topics]
-        return builder.build(expected_topic_ids=topic_ids, on_missing="fix_aggregate")
-```
-
-Register in `workflow.yml`:
-```yaml
-judge_class: "judges.myjudge.my_judge:MyJudge"
-```
-
-
-For data class documentation (`Report`, `Request`, `Leaderboard`, etc.), see [autojudge-base](https://github.com/trec-auto-judge/auto-judge-base). 
-
-For a full example with LLM calls, see `judges/tinyjudge/`.
-
-
-
-### Running a Judge
-
 ```bash
+# Install
+uv venv && source .venv/bin/activate
+uv pip install -e .
+
+# Run a judge variant against a dataset
 auto-judge run \
-    --workflow judges/tinyjudge/workflow.yml \
+    --workflow judges/prefnugget/workflow.yml \
+    --variant iter20bothties-few \
     --rag-responses /path/to/responses/ \
     --rag-topics /path/to/topics.jsonl \
     --out-dir ./output/
 
-# See all options
-auto-judge run --workflow judges/tinyjudge/workflow.yml --help
-```
-
-For variants, parameter sweeps, and advanced configurations, see the [workflow documentation](judges/complete_example/README.md).
-
-## LLM Configuration
-
-**Important:** Your judge must use the `llm_config` parameter passed to `judge()`. Do not hardcode endpoints or API keys.
-
-The `llm_config` object (`LlmConfigBase`) provides basic fields (`model`, `base_url`, `cache_dir`) and stores the full YAML config in `.raw` to store additional parameters for your LLM backend (e.g. here `MinimaLlmConfig`):
-
-```python
-import asyncio
-from minima_llm import MinimaLlmConfig, MinimaLlmRequest, OpenAIMinimaLlm
-
-def judge(self, rag_responses, rag_topics, llm_config, **kwargs) -> Leaderboard:
-    # Convert to full config for backend features (batching, retry, etc.)
-    full_config = MinimaLlmConfig.from_dict(llm_config.raw)
-    backend = OpenAIMinimaLlm(full_config)
-    # ... your judge logic
-
-    response = asyncio.run(backend.generate(MinimaLlmRequest(
-        request_id="example",
-        messages=[{"role": "user", "content": "Is this answer relevant? Reply 1 or 0."}],
-    )))
-    score = float(response.text.strip())
-```
-
-The `llm_config` object is automatically populated from environment variables and optional config files.
-
-This example uses MinimaLlm, but you can use any LLM backend you prefer (including `litellm`).
-
-### Environment Variables
-
-Set these before running:
-
-```bash
-export OPENAI_BASE_URL="https://api.openai.com/v1"  # or your endpoint
-export OPENAI_MODEL="gpt-4o-mini"
-export OPENAI_API_KEY="sk-..."
-export CACHE_DIR="./cache"  # optional, enables prompt caching
-```
-
-### Config File (optional)
-
-Create `llm-config.yml`:
-
-```yaml
-base_url: "http://localhost:8000/v1"
-model: "llama-3.3-70b-instruct"
-cache_dir: "./cache"
-```
-
-Then pass it via CLI:
-
-```bash
-auto-judge run --llm-config llm-config.yml --workflow ...
-```
-
-Configuration layers: **env → yaml → cli** (each layer overrides the previous).
-
-## Example Judges
-
-### CompleteExampleJudge (`judges/complete_example/`)
-
-A fully-documented example demonstrating all three protocols:
-- `ExampleNuggetCreator`: Creates nugget questions for topics
-- `ExampleQrelsCreator`: Creates relevance judgments
-- `ExampleLeaderboardJudge`: Scores responses and produces leaderboard
-
-No LLM calls - all logic is deterministic. Use this as a reference for building judges that use nuggets and qrels.
-
-### NaiveJudge (`judges/naive/`)
-
-A simple baseline judge that scores based on:
-- Response text length
-- Deterministic random score (for baseline comparison)
-
-### PyTerrier Retrieval Judge (`judges/pyterrier_retrieval/`)
-
-Uses PyTerrier retrieval models to score responses:
-- Indexes responses per topic
-- Runs multiple weighting models (BM25, TF-IDF, etc.)
-- Ranks responses by retrieval score
-
-Requires the `pyterrier` optional dependency.
-
-## Test Dataset: kiddie (`data/kiddie/`)
-
-A small **synthetic dataset** for development and testing:
-- 5 topics with simple queries
-- 4 runs of varying quality
-- Useful for validating workflow configurations and quick iteration
-
-```bash
-# Run your judge against kiddie
+# Run against the included kiddie test dataset
 auto-judge run \
-    --workflow judges/naive/workflow.yml \
+    --workflow judges/prefnugget/workflow.yml \
+    --variant iter20bothties-few \
     --rag-responses data/kiddie/runs/repgen/ \
     --rag-topics data/kiddie/topics/kiddie-topics.jsonl \
     --out-dir ./output/
 ```
 
-## Running Against Multiple Datasets
+### LLM Configuration
 
-Use `run_all_datasets.py` to run a workflow against multiple datasets configured in a YAML file:
-
+Set environment variables:
 ```bash
-python run_all_datasets.py --workflow judges/naive/workflow.yml --datasets data/datasets.yml
+export OPENAI_BASE_URL="https://api.openai.com/v1"
+export OPENAI_MODEL="gpt-4o-mini"
+export OPENAI_API_KEY="sk-..."
+export CACHE_DIR="./cache"  # optional, enables prompt caching
 ```
 
-### Dataset Configuration (`datasets.yml`)
+Or use a config file: `auto-judge run --llm-config llm-config.yml ...`
 
-To run on more than just `kiddie`, add entries to `datasets.yml`:
+## Judge Variants
 
-```yaml
-datasets:
-  - name: kiddie
-    responses: data/kiddie/runs/repgen/
-    topics: data/kiddie/topics/kiddie-topics.jsonl
-    prio1_runs:           # Used with --runs prio1
-      - run1
-      - run2
-    assessed_topics:      # Used with --topics assessed
-      - leaf
-      - cloud
-      - bee
+All judges share a three-phase architecture: (1) rank responses, (2) extract nugget questions, (3) grade responses against nuggets. Variants differ in how nuggets are extracted.
+
+| Judge | graded | nugget | preference | Phase 1: Ranking | Phase 2: Nugget Extraction | Phase 3: Grading |
+| --- | --- | --- | --- | --- | --- | --- |
+| PrefNugget best | response | pairwise | best | [PrefJudgment](#phase-1-preference-judging-prefjudgment) | [IterativeExtractDifferentiatingNuggets](#phase-2a-contrastive-nugget-extraction-iterativeextractdifferentiatingnuggets) | [GradeNuggetAnswer](#phase-3-nugget-based-grading-gradenuggetanswer) |
+| PrefNugget docs | docs | pairwise | best | [PrefJudgment](#phase-1-preference-judging-prefjudgment) | [IterativeExtractDifferentiatingNuggets](#phase-2a-contrastive-nugget-extraction-iterativeextractdifferentiatingnuggets) | [GradeNuggetAnswer](#phase-3-nugget-based-grading-gradenuggetanswer) |
+| PrefNugget random | response | pairwise | random | -- | [IterativeExtractDifferentiatingNuggets](#phase-2a-contrastive-nugget-extraction-iterativeextractdifferentiatingnuggets) | [GradeNuggetAnswer](#phase-3-nugget-based-grading-gradenuggetanswer) |
+| PrefNugget random docs | docs | pairwise | random | -- | [IterativeExtractDifferentiatingNuggets](#phase-2a-contrastive-nugget-extraction-iterativeextractdifferentiatingnuggets) | [GradeNuggetAnswer](#phase-3-nugget-based-grading-gradenuggetanswer) |
+| GroundedNugget best | response | grounded | best | [PrefJudgment](#phase-1-preference-judging-prefjudgment) | [GroundedIterativeNuggets](#phase-2b-grounded-nugget-extraction-groundediterativenuggets) | [GradeNuggetAnswer](#phase-3-nugget-based-grading-gradenuggetanswer) |
+| GroundedNugget best docs | docs | grounded | best | [PrefJudgment](#phase-1-preference-judging-prefjudgment) | [GroundedIterativeNuggets](#phase-2b-grounded-nugget-extraction-groundediterativenuggets) | [GradeNuggetAnswer](#phase-3-nugget-based-grading-gradenuggetanswer) |
+| GroundedNugget random | response | grounded | random | -- | [GroundedIterativeNuggets](#phase-2b-grounded-nugget-extraction-groundediterativenuggets) | [GradeNuggetAnswer](#phase-3-nugget-based-grading-gradenuggetanswer) |
+| GroundedNugget random docs | docs | grounded | random | -- | [GroundedIterativeNuggets](#phase-2b-grounded-nugget-extraction-groundediterativenuggets) | [GradeNuggetAnswer](#phase-3-nugget-based-grading-gradenuggetanswer) |
+| QueryOnlyNugget | response | query | na | -- | [IterativeGenerateNuggetQuestionsReportRequest](#phase-2c-query-only-nugget-generation-iterativegeneratenuggetquestionsreportrequest) | [GradeNuggetAnswer](#phase-3-nugget-based-grading-gradenuggetanswer) |
+| QueryOnlyNugget docs | docs | query | na | -- | [IterativeGenerateNuggetQuestionsReportRequest](#phase-2c-query-only-nugget-generation-iterativegeneratenuggetquestionsreportrequest) | [GradeNuggetAnswer](#phase-3-nugget-based-grading-gradenuggetanswer) |
+
+### Workflow files and variant names
+
+| Judge | Workflow | Variant |
+| --- | --- | --- |
+| PrefNugget best | `judges/prefnugget/workflow.yml` | `iter20bothties-few` |
+| PrefNugget docs | `judges/prefnugget/workflow.yml` | `iter20bothties-few-docs` |
+| PrefNugget random | `judges/prefnugget/workflow.yml` | `iter20bothties-few-random-pairs` |
+| PrefNugget random docs | `judges/prefnugget/workflow.yml` | `iter20bothties-few-docs-random-pairs` |
+| GroundedNugget best | `judges/grounded/workflow.yml` | `ground-response` |
+| GroundedNugget best docs | `judges/grounded/workflow.yml` | `ground-docs` |
+| GroundedNugget random | `judges/grounded/workflow.yml` | `ground-random-response` |
+| GroundedNugget random docs | `judges/grounded/workflow.yml` | `ground-random-docs` |
+| QueryOnlyNugget | `judges/queryonly/workflow.yml` | `prefnugget-rubric-response` |
+| QueryOnlyNugget docs | `judges/queryonly/workflow.yml` | `prefnugget-rubric-docs` |
+
+## Pseudocode
+
+### Phase 1: Pairwise Preference Elicitation
+
+```
+for each topic:
+    pairs = stratified_sample(responses, num_others=4)
+    for (resp_A, resp_B) in pairs:
+        winner  = LLM(PrefJudgment, passage_1=A, passage_2=B)
+        winner2 = LLM(PrefJudgment, passage_1=B, passage_2=A)  # swapped
+        record results; drop ties
+    borda[resp] = wins - losses
+    rank responses by borda score (best first)
+```
+
+### Phase 2a: PrefNugget -- Contrastive Nugget Extraction
+
+```
+for each topic:
+    questions = []
+    pairs = winner_loser_pairs sorted by borda(winner) + 0.99*borda(loser) desc
+    for (winner, loser) in pairs[:100], taken 2 per topic per batch:
+        if len(questions) >= 20: stop
+        new_qs = LLM(IterativeExtractDifferentiatingNuggets,
+                      winner_passage, loser_passage,
+                      given_exam_questions=questions)[:2]   # max 2 new per pair
+        questions += deduplicate(new_qs)
+    nugget_bank[topic] = questions[:20]
+```
+
+### Phase 2b: GroundedNugget -- Single-Response Extraction
+
+```
+for each topic:
+    questions = []
+    responses sorted by borda score (best first)
+    for response in responses[:100], taken 2 per topic per batch:
+        if len(questions) >= 20: stop
+        new_qs = LLM(GroundedIterativeNuggets,
+                      response_passage=response,
+                      given_exam_questions=questions)[:2]   # max 2 new per response
+        questions += deduplicate(new_qs)
+    nugget_bank[topic] = questions[:20]
+```
+
+### Phase 2c: QueryOnlyNugget -- Parametric Generation
+
+```
+for each topic:
+    questions = LLM(IterativeGenerateNuggetQuestionsReportRequest,
+                     query_title, query_background, query_problem)
+    nugget_bank[topic] = deduplicate(questions)[:20]
+```
+
+### Phase 3: Response Grading
+
+```
+for each (response, nugget_question) in responses x nugget_bank[topic]:
+
+    if grading == "response":
+        grade = LLM(GradeNuggetAnswer,
+                     question=nugget_question,
+                     passage=response.text)                   # -> 0-5
+
+    elif grading == "document_paragraphs":
+        for paragraph in response.cited_documents.paragraphs:
+            g = LLM(GradeNuggetAnswer,
+                     question=nugget_question,
+                     passage=paragraph)
+        grade = max(g for all paragraphs)                     # best paragraph wins
+
+    nugget_grades[response][nugget] = grade
+
+# Aggregate per response
+MAX_GRADE = max(grade for all nuggets)
+```
+
+## Prompt Definitions
+
+### Phase 1: Preference Judging (`PrefJudgment`)
+
+> You are a highly experienced and accurate assessor for TREC.
+>
+> Select the passage that answers the query better. Just answer 1 or 2, without any explanation or extra verbiage.
+> If both passages are similar, select the simplest and clearest.
+
+| Direction | Field | Description |
+| --- | --- | --- |
+| In | `query_title` | Query title |
+| In | `query_background` | Background context for the query |
+| In | `query_problem` | Problem statement to be addressed |
+| In | `passage_1` | Passage 1 |
+| In | `passage_2` | Passage 2 |
+| Out | `better_passage` | 1 or 2 |
+| Out | `confidence` | Score 0.0--1.0 |
+
+### Phase 2a: Contrastive Nugget Extraction (`IterativeExtractDifferentiatingNuggets`)
+
+> Compare Winner vs Loser RAG responses for a query. Focus on relevance, correctness, completeness.
+>
+> From given_exam_questions, identify or generate questions the Winner addresses much better than the Loser. Reuse questions where possible. New differentiating_questions must be brief, atomic questions about information the Winner handles much better.
+>
+> Avoid generic quality questions. Make questions self-contained (e.g., "Capital of France?" not "The capital?").
+
+| Direction | Field | Description |
+| --- | --- | --- |
+| In | `query_title` | Query title |
+| In | `query_background` | Background context for the query |
+| In | `winner_passage` | The passage that won the comparison |
+| In | `loser_passage` | The passage that lost the comparison |
+| In | `given_exam_questions` | Given exam questions (from prior iterations) |
+| Out | `differentiating_questions` | JSON array of new questions |
+| Out | `reasoning` | Brief explanation of the analysis |
+| Out | `confidence` | Score 0.0--1.0 |
+
+### Phase 2b: Grounded Nugget Extraction (`GroundedIterativeNuggets`)
+
+> Analyze the RAG response passage for a query. Focus on relevance, correctness, completeness.
+>
+> From given_exam_questions, identify or generate questions the response addresses best. Reuse questions where possible. New_questions must be brief, atomic questions about information the response handles best.
+>
+> Avoid generic quality questions. Make questions self-contained (e.g., "Capital of France?" not "The capital?").
+
+| Direction | Field | Description |
+| --- | --- | --- |
+| In | `query_title` | Query title |
+| In | `query_background` | Background context for the query |
+| In | `response_passage` | RAG response passage |
+| In | `given_exam_questions` | Given exam questions (from prior iterations) |
+| Out | `new_questions` | JSON array of new questions |
+| Out | `reasoning` | Brief explanation of the analysis |
+| Out | `confidence` | Score 0.0--1.0 |
+
+### Phase 2c: Query-Only Nugget Generation (`IterativeGenerateNuggetQuestionsReportRequest`)
+
+> For a query as title, problem statement, and user background, imagine a good RAG response. Focus on relevance, correctness, completeness. Generate brief, atomic questions that target query-essential information which a good response should answer well.
+>
+> Avoid generic quality questions. Make questions self-contained (e.g., "Capital of France?" not "The capital?").
+
+| Direction | Field | Description |
+| --- | --- | --- |
+| In | `query_title` | Query title |
+| In | `query_background` | Background context for the query |
+| In | `query_problem` | Problem statement to be addressed |
+| Out | `questions` | List of concise questions |
+| Out | `reasoning` | Brief explanation of the reasoning |
+| Out | `confidence` | Score 0.0--1.0 |
+
+### Phase 3: Nugget-Based Grading (`GradeNuggetAnswer`)
+
+> Grade how well a passage answers a specific question.
+>
+> Can the question be answered based on the available context? Choose one:
+> - 5: The answer is highly relevant, complete, and accurate.
+> - 4: The answer is mostly relevant and complete but may have minor gaps or inaccuracies.
+> - 3: The answer is partially relevant and complete, with noticeable gaps or inaccuracies.
+> - 2: The answer has limited relevance and completeness, with significant gaps or inaccuracies.
+> - 1: The answer is minimally relevant or complete, with substantial shortcomings.
+> - 0: The answer is not relevant or complete at all.
+
+| Direction | Field | Description |
+| --- | --- | --- |
+| In | `question` | The question to be answered |
+| In | `passage` | The passage that may contain the answer |
+| Out | `grade` | Grade 0--5 |
+| Out | `reasoning` | Brief explanation of the grade |
+| Out | `confidence` | Score 0.0--1.0 |
+
+## Project Structure
+
+```
+prefnugget-starterkit/
+├── pyproject.toml
+├── README.md
+├── judges.yml                     # Analysis config (judge name mappings)
+├── judges/
+│   ├── shared/
+│   │   ├── pref_common.py         # Preference judging utilities
+│   │   └── rubric_common.py       # Nugget grading utilities
+│   ├── prefnugget/
+│   │   ├── prefnugget_judge.py    # PrefNugget judge (contrastive extraction)
+│   │   └── workflow.yml
+│   ├── grounded/
+│   │   ├── groundnugget_judge.py  # GroundedNugget judge (single-response extraction)
+│   │   └── workflow.yml
+│   └── queryonly/
+│       ├── rubric_autojudge.py    # QueryOnlyNugget judge (parametric generation)
+│       └── workflow.yml
+├── data/
+│   └── kiddie/                    # Synthetic test dataset
+├── tests/
+│   ├── test_prompt_snapshots.py   # Assert prompt text is identical to originals
+│   └── test_imports.py            # Smoke test that all classes import
+└── run_all_datasets.py            # Multi-dataset runner
 ```
 
 ## Meta-Evaluation
 
-The `data/kiddie/eval/` directory contains a synthetic ground-truth leaderboard for testing meta-evaluation:
+Install with evaluation tools:
+```bash
+uv pip install -e ".[evaluate]"
+```
 
+Run meta-evaluation:
 ```bash
 auto-judge-evaluate meta-evaluate \
-    --truth-leaderboard data/kiddie/eval/kiddie_fake.eval.ir_measures.txt \
+    --truth-leaderboard /path/to/truth.eval.ir_measures.txt \
     --truth-format ir_measures \
     --eval-format tot -i ./output/*eval.txt \
     --correlation kendall --on-missing default
 ```
 
-For real evaluation, obtain official TREC datasets separately.
+## Dependencies
 
-
-## Creating A More Elaborate Judge
-
-1. **Copy an example**: Start from `judges/complete_example/` or `judges/naive/`
-
-2. **Implement the protocol**: Your judge class needs:
-   ```python
-   from autojudge_base import AutoJudge, Leaderboard, Report, Request
-
-   class MyJudge(AutoJudge):
-       nugget_banks_type = NuggetBanks
-
-       def create_nuggets(self, rag_responses, rag_topics, llm_config, **kwargs):
-           # Optional: create nugget questions
-           return None
-
-       def create_qrels(self, rag_responses, rag_topics, llm_config, **kwargs):
-           # Optional: create relevance judgments
-           return None
-
-       def judge(self, rag_responses, rag_topics, llm_config, **kwargs):
-           # Required: produce leaderboard
-           return leaderboard
-   ```
-
-3. **Configure workflow.yml**: Set lifecycle flags, settings, variants
-
-4. **Run your judge**:
-   ```bash
-   auto-judge run --workflow judges/myjudge/workflow.yml ...
-   ```
-
-## Project Structure
-
-```
-auto-judge-starterkit/
-├── pyproject.toml           # Dependencies and package config
-├── README.md                # This file
-├── judges/
-│   ├── complete_example/    # Full protocol example (nuggets, qrels, leaderboard)
-│   ├── naive/               # Simple baseline judge
-│   ├── tinyjudge/           # Minimal LLM judge example
-│   └── pyterrier_retrieval/ # PyTerrier retrieval judge
-├── data/
-│   └── kiddie/              # Synthetic test dataset
-├── documentation/           # Submission guide
-└── tests/
-    └── test_examples.py     # Smoke tests
-```
-
-## Documentation
-
-- See `judges/complete_example/README.md` for detailed protocol documentation
-- See [autojudge-base](https://github.com/trec-auto-judge/auto-judge-base) for core data classes (`Report`, `Request`, `Leaderboard`, `NuggetBanks`, etc.) and protocol definitions
+- [autojudge-base](https://github.com/trec-auto-judge/auto-judge-base) -- core protocols and data models
+- [minima-llm](https://github.com/trec-auto-judge/minima-llm) -- LLM integration
+- [DSPy](https://github.com/stanfordnlp/dspy) -- structured prediction
 
 ## License
 

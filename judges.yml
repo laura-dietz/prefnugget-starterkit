@@ -1,0 +1,63 @@
+styles:
+  colors:
+    pairwise: "#7B2D8E"    # dark purple
+    grounded: "#87CEEB"    # medium sky blue
+    query:    "#C6F752"    # lime green
+  hatches:
+    best:     ""
+    random:   ".."
+    na:       ""
+    response: ""
+    docs:     "//"
+
+judges:
+
+  tmp-iter20bothties-few.eval:
+    name: PrefNugget
+    nugget: pairwise
+    preference: best
+    graded: response
+
+  tmp-iter20bothties-few-docs.eval:
+    name: PrefNugget docs
+    nugget: pairwise
+    preference: best
+    graded: docs
+
+  tmp-iter20bothties-few-random-pairs.eval:
+    name: PrefNugget random
+    nugget: pairwise
+    preference: random
+    graded: response
+
+  tmp-iter20bothties-few-docs-random-pairs.eval:
+    name: PrefNugget random docs
+    nugget: pairwise
+    preference: random
+    graded: docs
+
+
+  tmp-ground-ground-response.eval:
+    name: GroundedNugget best
+    nugget: grounded
+    preference: best
+    graded: response
+
+  tmp-ground-ground-random-response.eval:
+    name: GroundedNugget random
+    nugget: grounded
+    preference: random
+    graded: response
+
+  tmp-prefnugget-rubric-response.eval:
+    name: QueryOnlyNugget
+    nugget: query
+    preference: na
+    graded: response
+
+
+  tmp-prefnugget-rubric-docs.eval:
+    name: QueryOnlyNugget
+    nugget: query
+    preference: na
+    graded: docs

@@ -1,0 +1,37 @@
+# QueryOnlyNugget: Parametric nugget generation (no passage grounding)
+#
+# Phase 2: Query-only nugget generation (IterativeGenerateNuggetQuestionsReportRequest)
+# Phase 3: Nugget-based grading (GradeNuggetAnswer)
+# (No Phase 1 -- nuggets are generated from the query alone)
+
+nugget_class: "judges.queryonly.rubric_autojudge:RubricJudge"
+judge_class: "judges.prefnugget.prefnugget_judge:PrefNuggetJudge"
+
+create_nuggets: true
+judge: true
+judge_uses_nuggets: true
+nugget_depends_on_responses: false  # parametric - no responses needed for nugget creation
+
+settings:
+  filebase: "{_name}"
+  max_nuggets_per_topic: 20
+
+nugget_settings:
+  prompt: "prefnugget-baseline"
+
+judge_settings:
+  grade_threshold: 4
+
+variants:
+
+  prefnugget-rubric-response:
+    nugget_settings:
+      prompt: "prefnugget-baseline"
+    judge_settings:
+      grade_text: "response"
+
+  prefnugget-rubric-docs:
+    nugget_settings:
+      prompt: "prefnugget-baseline"
+    judge_settings:
+      grade_text: "document_paragraphs"

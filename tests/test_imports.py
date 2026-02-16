@@ -60,6 +60,22 @@ def test_shared_rubric_common_imports():
     )
 
 
+def test_shared_nugget_judge_base_imports():
+    """Shared nugget_judge_base utilities can be imported."""
+    from judges.shared.nugget_judge_base import (
+        NuggetJudgeBase,
+        QuestionTracker,
+        PREFNUGGET_SPEC,
+        _to_minima_config,
+        build_response_lookups,
+        run_preference_phase,
+        save_preferences,
+        load_preferences,
+        chunk_by_query,
+        _print_tracker,
+    )
+
+
 def test_dspy_signatures_all_importable():
     """All DSPy signatures used across judges can be imported."""
     from judges.shared.pref_common import PrefJudgment, PrefTiesJudgment
@@ -106,3 +122,21 @@ def test_prefnugget_spec_measures():
     assert "AVG_GRADE" in measure_names
     assert "MAX_GRADE" in measure_names
     assert "COVERED_COUNT" in measure_names
+
+
+def test_prefnugget_spec_from_base():
+    """PREFNUGGET_SPEC is the same object whether imported from shared or prefnugget."""
+    from judges.prefnugget import PREFNUGGET_SPEC as spec_from_prefnugget
+    from judges.shared.nugget_judge_base import PREFNUGGET_SPEC as spec_from_base
+
+    assert spec_from_prefnugget is spec_from_base
+
+
+def test_judges_inherit_from_base():
+    """PrefNuggetJudge and GroundNuggetJudge inherit from NuggetJudgeBase."""
+    from judges.prefnugget import PrefNuggetJudge
+    from judges.grounded import GroundNuggetJudge
+    from judges.shared.nugget_judge_base import NuggetJudgeBase
+
+    assert issubclass(PrefNuggetJudge, NuggetJudgeBase)
+    assert issubclass(GroundNuggetJudge, NuggetJudgeBase)

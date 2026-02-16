@@ -11,6 +11,7 @@ create_nuggets: true
 judge: true
 judge_uses_nuggets: true
 nugget_depends_on_responses: false  # parametric - no responses needed for nugget creation
+force_recreate_nuggets: true
 
 settings:
   filebase: "{_name}"
@@ -24,14 +25,20 @@ judge_settings:
 
 variants:
 
-  prefnugget-rubric-response:
+  # --- Primary variants ---
+
+  response: &qo-response
     nugget_settings:
       prompt: "prefnugget-baseline"
     judge_settings:
       grade_text: "response"
 
-  prefnugget-rubric-docs:
+  docs: &qo-docs
     nugget_settings:
       prompt: "prefnugget-baseline"
     judge_settings:
       grade_text: "document_paragraphs"
+
+  # --- Old name aliases ---
+  prefnugget-rubric-response: *qo-response
+  prefnugget-rubric-docs: *qo-docs

@@ -30,14 +30,9 @@ from autojudge_base import (
 from autojudge_base.nugget_data import NuggetBanks, NuggetQuestion
 from autojudge_base.leaderboard.leaderboard import OnMissing
 from minima_llm import MinimaLlmConfig
-
-
-def _to_minima_config(llm_config: LlmConfigBase) -> MinimaLlmConfig:
-    """Convert LlmConfigBase to MinimaLlmConfig (env vars as base, raw dict overlaid)."""
-    return MinimaLlmConfig.from_dict(llm_config.raw or {})
-
-# Import shared utilities
 from minima_llm.dspy_adapter import run_dspy_batch_generic
+
+from judges.shared.nugget_judge_base import _to_minima_config
 from judges.shared.rubric_common import (
     NuggetGradeData,
     GradeNuggetAnswer,

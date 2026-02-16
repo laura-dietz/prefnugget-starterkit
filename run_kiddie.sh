@@ -16,19 +16,23 @@ TRUTH="data/kiddie/eval/kiddie_fake.eval.ir_measures.txt"
 
 # --- Run the PrefNugget judge (best, response-graded) ---
 WORKFLOW="judges/prefnugget/workflow.yml"
-VARIANT="iter20bothties-few"
+VARIANT="best"
 
 # Other PrefNugget variants:
-#   iter20bothties-few-docs              (best, document-graded)
-#   iter20bothties-few-random-pairs      (random pairs, response-graded)
-#   iter20bothties-few-docs-random-pairs (random pairs, document-graded)
+#   best-docs                (best, document-graded)
+#   random                   (random pairs, response-graded)
+#   random-docs              (random pairs, document-graded)
+#   best-decide              (best, must_decide, response-graded)
+#   best-decide-docs         (best, must_decide, document-graded)
+#   random-decide            (random pairs, must_decide, response-graded)
+#   random-decide-docs       (random pairs, must_decide, document-graded)
 #
 # GroundedNugget (use judges/grounded/workflow.yml):
-#   ground-response        ground-docs
-#   ground-random-response ground-random-docs
+#   best       best-docs
+#   random     random-docs
 #
 # QueryOnlyNugget (use judges/queryonly/workflow.yml):
-#   prefnugget-rubric-response  prefnugget-rubric-docs
+#   response   docs
 
 echo "=== Running ${VARIANT} on kiddie ==="
 auto-judge run \

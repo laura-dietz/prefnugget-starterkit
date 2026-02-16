@@ -11,6 +11,7 @@ create_nuggets: true
 judge: true
 judge_uses_nuggets: true
 nugget_depends_on_responses: true
+force_recreate_nuggets: true
 
 settings:
   filebase: "ground-{_name}"
@@ -39,22 +40,58 @@ judge_settings:
 
 variants:
 
-  ground-response:
+  # --- Primary variants (ties_allowed, default) ---
+
+  best: &gn-best
     judge_settings:
       grade_text: "response"
 
-  ground-docs:
+  best-docs: &gn-best-docs
     judge_settings:
       grade_text: "document_paragraphs"
 
-  ground-random-response:
+  random: &gn-random
     nugget_settings:
       random_pairs: true
     judge_settings:
       grade_text: "response"
 
-  ground-random-docs:
+  random-docs: &gn-random-docs
     nugget_settings:
       random_pairs: true
     judge_settings:
       grade_text: "document_paragraphs"
+
+  # --- Backward compat (must_decide) ---
+
+  best-decide: &gn-best-decide
+    nugget_settings:
+      pref_judge: "must_decide"
+    judge_settings:
+      grade_text: "response"
+
+  best-decide-docs: &gn-best-decide-docs
+    nugget_settings:
+      pref_judge: "must_decide"
+    judge_settings:
+      grade_text: "document_paragraphs"
+
+  random-decide: &gn-random-decide
+    nugget_settings:
+      pref_judge: "must_decide"
+      random_pairs: true
+    judge_settings:
+      grade_text: "response"
+
+  random-decide-docs: &gn-random-decide-docs
+    nugget_settings:
+      pref_judge: "must_decide"
+      random_pairs: true
+    judge_settings:
+      grade_text: "document_paragraphs"
+
+  # --- Old name aliases (grounded already used ties_allowed, so old names -> ties variants) ---
+  ground-response: *gn-best
+  ground-docs: *gn-best-docs
+  ground-random-response: *gn-random
+  ground-random-docs: *gn-random-docs

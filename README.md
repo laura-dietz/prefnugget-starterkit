@@ -4,13 +4,35 @@ Nugget-based LLM judge implementations for evaluating RAG systems, as described 
 
 Built on the [TREC AutoJudge](https://trec-auto-judge.cs.unh.edu/) framework.
 
+## Setup
+
+```bash
+# Create and activate a virtual environment
+uv venv
+source .venv/bin/activate
+
+# Install the package (editable mode)
+uv pip install -e .
+
+# Optional: install evaluation tools for local meta-evaluation
+uv pip install -e ".[evaluate]"
+```
+
+### LLM Configuration
+
+Set environment variables:
+```bash
+export OPENAI_BASE_URL="https://api.openai.com/v1"
+export OPENAI_MODEL="gpt-4o-mini"
+export OPENAI_API_KEY="sk-..."
+export CACHE_DIR="./cache"  # optional, enables prompt caching
+```
+
+Or use a config file: `auto-judge run --llm-config llm-config.yml ...`
+
 ## Quick Start
 
 ```bash
-# Install
-uv venv && source .venv/bin/activate
-uv pip install -e .
-
 # Run a judge variant against a dataset
 auto-judge run \
     --workflow judges/prefnugget/workflow.yml \
@@ -25,20 +47,18 @@ auto-judge run \
     --variant iter20bothties-few \
     --rag-responses data/kiddie/runs/repgen/ \
     --rag-topics data/kiddie/topics/kiddie-topics.jsonl \
-    --out-dir ./output/
+    --out-dir ./output-kiddie/
 ```
 
-### LLM Configuration
+Or run the included smoke test script which also does meta-evaluation: `bash run_kiddie.sh`
 
-Set environment variables:
-```bash
-export OPENAI_BASE_URL="https://api.openai.com/v1"
-export OPENAI_MODEL="gpt-4o-mini"
-export OPENAI_API_KEY="sk-..."
-export CACHE_DIR="./cache"  # optional, enables prompt caching
-```
+This produces three files in the output directory:
 
-Or use a config file: `auto-judge run --llm-config llm-config.yml ...`
+| File | Description |
+|------|-------------|
+| `<variant>.eval.txt` | Leaderboard scores (upload this for meta-evaluation) |
+| `<variant>.nuggets.jsonl` | Extracted nugget banks |
+| `<variant>.config.yml` | Resolved configuration snapshot |
 
 ## Judge Variants
 
@@ -260,6 +280,7 @@ prefnugget-starterkit/
 │   └── queryonly/
 │       ├── rubric_autojudge.py    # QueryOnlyNugget judge (parametric generation)
 │       └── workflow.yml
+├── run_kiddie.sh                     # End-to-end smoke test on kiddie
 ├── data/
 │   └── kiddie/                    # Synthetic test dataset
 ├── tests/
@@ -270,18 +291,32 @@ prefnugget-starterkit/
 
 ## Meta-Evaluation
 
-Install with evaluation tools:
+### Local meta-evaluation (on kiddie)
+
+Requires `uv pip install -e ".[evaluate]"` (see [Setup](#setup)).
+
 ```bash
-uv pip install -e ".[evaluate]"
+auto-judge-evaluate meta-evaluate \
+    --truth-leaderboard data/kiddie/eval/kiddie_fake.eval.ir_measures.txt \
+    --truth-format ir_measures --truth-header \
+    --eval-format tot \
+    --on-missing default \
+    output-kiddie/iter20bothties-few.eval.txt
 ```
 
-Run meta-evaluation:
+### Meta-evaluation service
+
+To evaluate against a real TREC dataset, upload your `<variant>.eval.txt` file to the [TREC AutoJudge meta-evaluation service](https://trec-auto-judge.cs.unh.edu/).
+
+### Local meta-evaluation (on your own data)
+
 ```bash
 auto-judge-evaluate meta-evaluate \
     --truth-leaderboard /path/to/truth.eval.ir_measures.txt \
-    --truth-format ir_measures \
-    --eval-format tot -i ./output/*eval.txt \
-    --correlation kendall --on-missing default
+    --truth-format ir_measures --truth-header \
+    --eval-format tot \
+    --on-missing default \
+    output/*.eval.txt
 ```
 
 ## Dependencies

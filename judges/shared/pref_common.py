@@ -82,6 +82,8 @@ class PrefJudgeData(BaseModel):
 
 def _parse_better_ties(s: str) -> int:
     """Extract passage 0-2 from string."""
+    if not s:
+        raise ValueError("better_passage is empty or None — LLM did not follow instructions")
     m = re.search(r"\b([0-2])\b", s)
     if not m:
         return -1  # Default to -1 if no valid preference is found
@@ -90,6 +92,8 @@ def _parse_better_ties(s: str) -> int:
 
 def _parse_better(s: str) -> int:
     """Extract passage 1-2 from string."""
+    if not s:
+        raise ValueError("better_passage is empty or None — LLM did not follow instructions")
     m = re.search(r"\b([1-2])\b", s)
     if not m:
         return 0  # Default to 0 if no valid preference is found

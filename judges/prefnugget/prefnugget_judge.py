@@ -253,9 +253,11 @@ class PrefNuggetJudge(NuggetJudgeBase):
     def _make_convert_output(self, max_questions_per_pair):
         def convert_output(prediction: dspy.Prediction, data: PrefNuggetData) -> None:
             differentiating_questions = getattr(prediction, "differentiating_questions", [])
+            if not isinstance(differentiating_questions, list):
+                raise ValueError(f"differentiating_questions is {type(differentiating_questions).__name__}, expected list — LLM did not follow instructions")
             data.differentiating_questions = [
-                q.strip() for q in (differentiating_questions or [])
-                if q and q.strip()
+                q.strip() for q in differentiating_questions
+                if q and isinstance(q, str) and q.strip()
             ][:max_questions_per_pair]
         return convert_output
 

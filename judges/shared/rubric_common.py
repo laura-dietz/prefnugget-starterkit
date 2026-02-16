@@ -56,6 +56,8 @@ class NuggetGradeData(BaseModel):
 
 def _parse_grade(s: str) -> int:
     """Extract grade 0-5 from string."""
+    if not s:
+        raise ValueError("grade is empty or None — LLM did not follow instructions")
     m = re.search(r"\b([0-5])\b", s)
     if not m:
         return 0  # Default to 0 if no valid grade found

@@ -34,7 +34,7 @@ if [[ -z "${CACHE_DIR:-}" ]]; then
     exit 1
 fi
 
-for wf in "$OLD_PREFNUGGET" "$OLD_GROUNDED" "$OLD_QUERYONLY"; do
+for wf in "$OLD_PREFNUGGET" "$OLD_GROUNDED" "$OLD_RUBRIC"; do
     if [[ ! -f "$wf" ]]; then
         echo "ERROR: Old workflow not found at $wf"
         echo "  Run from prefnugget-starterkit/ directory."
@@ -118,11 +118,16 @@ run_variant "$DECIDE_GROUNDED" "ground-response"        "grounded--best-decide"
 run_variant "$DECIDE_GROUNDED" "ground-random-response" "grounded--random-decide"
 # run_variant "$DECIDE_GROUNDED" "ground-random-docs"     "grounded--random-decide-docs"
 
-# ── queryonly (old rubric_workflow.yml in prefnugget dir) ─────────────────────
+# ── queryonly (old rubric judge) ──────────────────────────────────────────────
+
+# Old rubric workflow.yml has a bug: prompt "IterativeGenerateNuggetQuestionsReportRequest"
+# should be "prefnugget-baseline". Fix in temp copy.
+FIXED_RUBRIC="/tmp/golden-trace-out/workflow-rubric-fixed.yml"
+sed 's/prompt: "IterativeGenerateNuggetQuestionsReportRequest"/prompt: "prefnugget-baseline"/' "$OLD_RUBRIC" > "$FIXED_RUBRIC"
 
 echo "=== queryonly variants ==="
-run_variant "$OLD_QUERYONLY" "prefnugget-rubric-response" "queryonly--response"
-# run_variant "$OLD_QUERYONLY" "prefnugget-rubric-docs"     "queryonly--docs"
+run_variant "$FIXED_RUBRIC" "prefnugget" "queryonly--response"
+# run_variant "$FIXED_RUBRIC" "prefnugget" "queryonly--docs"  # old rubric has no grade_text variants
 
 # ── Summary ───────────────────────────────────────────────────────────────────
 

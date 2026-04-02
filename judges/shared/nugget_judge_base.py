@@ -244,7 +244,7 @@ def save_preferences(
     path: Path,
 ) -> None:
     """Save Phase 1 checkpoint to JSONL."""
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         for d in grade_data:
             record = d.model_dump()
             record["_type"] = "comparison"
@@ -261,7 +261,7 @@ def load_preferences(path: Path) -> tuple[List[PrefJudgeData], Dict[str, PrefAgg
     grade_data: List[PrefJudgeData] = []
     aggregates: Dict[str, PrefAggregateResult] = {}
 
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         for line in f:
             record = json.loads(line)
             record_type = record.pop("_type", None)

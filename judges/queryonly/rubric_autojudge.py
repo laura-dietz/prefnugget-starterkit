@@ -270,7 +270,7 @@ def write_talmudir_export(
 
     # Write to file
     output_path = Path(f"{filebase}.talmudir.jsonl")
-    with open(output_path, "w") as f:
+    with open(output_path, "w",encoding="utf-8") as f:
         for sample in samples:
             f.write(sample.model_dump_json() + "\n")
 

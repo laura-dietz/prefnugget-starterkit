@@ -595,10 +595,10 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
                 # Run LLM extraction
                 full_config = _to_minima_config(llm_config)
                 extraction_chunk = run_dspy_batch_generic(
-                    extraction_chunk,
-                    self._get_extraction_signature(),
-                    convert_output,
-                    full_config,
+                    data=extraction_chunk,
+                    signature=self._get_extraction_signature(),
+                    converter=convert_output,
+                    llm_config=full_config,
                 )
 
                 for data in extraction_chunk:

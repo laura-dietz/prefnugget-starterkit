@@ -27,9 +27,9 @@ classifiers = [
 ]
 
 dependencies = [
-    "autojudge-base>=0.3.2",
+    "autojudge-base>=0.3.10",
     "tqdm>=4.0",
-    "minima-llm>=0.2.2",
+    "minima-llm>=0.2.4",
     "dspy>=3.0",
 ]
 

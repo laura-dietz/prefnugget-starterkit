@@ -254,6 +254,7 @@ class PrefNuggetJudge(NuggetJudgeBase):
         def convert_output(prediction: dspy.Prediction, data: PrefNuggetData) -> None:
             differentiating_questions = getattr(prediction, "differentiating_questions", [])
             if not isinstance(differentiating_questions, list):
+                print(f"DEBUG retry needed for {data}: got differentiating_questions with type {type(differentiating_questions)}")
                 raise ValueError(f"differentiating_questions is {type(differentiating_questions).__name__}, expected list — LLM did not follow instructions")
             data.differentiating_questions = [
                 q.strip() for q in differentiating_questions

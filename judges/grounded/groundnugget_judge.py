@@ -13,6 +13,7 @@ from textwrap import dedent
 from typing import Dict, List, Optional, Sequence, Set, Type
 
 import dspy
+from minima_llm import get_retry_seed
 from pydantic import BaseModel
 
 from autojudge_base import (
@@ -205,8 +206,11 @@ class GroundNuggetJudge(NuggetJudgeBase):
 
     def _make_convert_output(self, max_questions_per_pair):
         def convert_output(prediction: dspy.Prediction, data: GroundNuggetData) -> None:
-            # Signature declares Optional[list[str]]; `None` is a valid "no new questions" answer.
-            new_questions = getattr(prediction, "new_questions", None) or []
+            new_questions = getattr(prediction, "new_questions", [])
+            # Lenient fallback: after several failed retries, accept None (legal per the
+            # Optional[list[str]] signature) as "no new questions" instead of looping forever.
+            if new_questions is None and get_retry_seed() >= 3:
+                new_questions = []
             if not isinstance(new_questions, list):
                 raise ValueError(f"new_questions is {type(new_questions).__name__}, expected list — LLM did not follow instructions")
             data.new_questions = [

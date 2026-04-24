@@ -13,6 +13,7 @@ from textwrap import dedent
 from typing import Dict, List, Optional, Sequence, Set, Type
 
 import dspy
+from minima_llm import get_retry_seed
 from pydantic import BaseModel
 
 from autojudge_base import (
@@ -252,8 +253,11 @@ class PrefNuggetJudge(NuggetJudgeBase):
 
     def _make_convert_output(self, max_questions_per_pair):
         def convert_output(prediction: dspy.Prediction, data: PrefNuggetData) -> None:
-            # Signature declares Optional[List[str]]; `None` is a valid "no differentiating questions" answer.
-            differentiating_questions = getattr(prediction, "differentiating_questions", None) or []
+            differentiating_questions = getattr(prediction, "differentiating_questions", [])
+            # Lenient fallback: after several failed retries, accept None (legal per the
+            # Optional[List[str]] signature) as "no differentiating questions" rather than looping forever.
+            if differentiating_questions is None and get_retry_seed() >= 3:
+                differentiating_questions = []
             if not isinstance(differentiating_questions, list):
                 print(f"DEBUG retry needed for {data}: got differentiating_questions with type {type(differentiating_questions)}")
                 raise ValueError(f"differentiating_questions is {type(differentiating_questions).__name__}, expected list — LLM did not follow instructions")

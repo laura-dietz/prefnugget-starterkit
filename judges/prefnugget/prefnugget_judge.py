@@ -252,7 +252,8 @@ class PrefNuggetJudge(NuggetJudgeBase):
 
     def _make_convert_output(self, max_questions_per_pair):
         def convert_output(prediction: dspy.Prediction, data: PrefNuggetData) -> None:
-            differentiating_questions = getattr(prediction, "differentiating_questions", [])
+            # Signature declares Optional[List[str]]; `None` is a valid "no differentiating questions" answer.
+            differentiating_questions = getattr(prediction, "differentiating_questions", None) or []
             if not isinstance(differentiating_questions, list):
                 print(f"DEBUG retry needed for {data}: got differentiating_questions with type {type(differentiating_questions)}")
                 raise ValueError(f"differentiating_questions is {type(differentiating_questions).__name__}, expected list — LLM did not follow instructions")

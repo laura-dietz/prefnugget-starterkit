@@ -205,7 +205,8 @@ class GroundNuggetJudge(NuggetJudgeBase):
 
     def _make_convert_output(self, max_questions_per_pair):
         def convert_output(prediction: dspy.Prediction, data: GroundNuggetData) -> None:
-            new_questions = getattr(prediction, "new_questions", [])
+            # Signature declares Optional[list[str]]; `None` is a valid "no new questions" answer.
+            new_questions = getattr(prediction, "new_questions", None) or []
             if not isinstance(new_questions, list):
                 raise ValueError(f"new_questions is {type(new_questions).__name__}, expected list — LLM did not follow instructions")
             data.new_questions = [

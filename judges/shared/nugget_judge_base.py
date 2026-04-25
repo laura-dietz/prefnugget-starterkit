@@ -51,6 +51,7 @@ from judges.shared.rubric_common import (
     prepare_nugget_grade_data_for_documents,
     compute_nugget_aggregates,
     compute_nugget_aggregates_for_documents,
+    compute_nugget_aggregates_combined,
     build_nugget_banks,
     collect_nugget_relevant_docs,
     write_nugget_docs_collaborator,
@@ -631,6 +632,50 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
         questions_by_topic = self._flatten_extraction_results(extraction_result_data, rag_topic_dict)
         return build_nugget_banks(questions_by_topic, max_per_topic=max_nuggets_per_topic)
 
+    def _grade_response_passages(
+        self,
+        rag_responses: Sequence[Report],
+        nugget_banks: NuggetBanksProtocol,
+        full_config: MinimaLlmConfig,
+    ) -> tuple[List[NuggetGradeData], Dict[str, int]]:
+        """Grade each response passage against all of its topic's nuggets."""
+        judge_name = self._get_judge_name()
+        print(f"{judge_name}: Preparing response grade data...")
+        grade_data, nuggets_per_topic = prepare_nugget_grade_data(rag_responses, nugget_banks)
+        print(f"{judge_name}: Grading {len(grade_data)} response passages against nuggets...")
+        grade_data = run_dspy_batch_generic(
+            grade_data,
+            GradeNuggetAnswer,
+            GradeNuggetAnswer.convert_prompt_output,
+            full_config,
+        )
+        return grade_data, nuggets_per_topic
+
+    def _grade_document_passages(
+        self,
+        rag_responses: Sequence[Report],
+        nugget_banks: NuggetBanksProtocol,
+        full_config: MinimaLlmConfig,
+        use_paragraphs: bool,
+        nugget_filter: Optional[Callable[[str, str, str], bool]] = None,
+    ) -> tuple[List[NuggetGradeData], Dict[str, int]]:
+        """Grade each document/paragraph passage against all of its topic's nuggets."""
+        judge_name = self._get_judge_name()
+        print(f"{judge_name}: Preparing document grade data...")
+        grade_data, nuggets_per_topic = prepare_nugget_grade_data_for_documents(
+            rag_responses, nugget_banks,
+            use_paragraphs=use_paragraphs,
+            nugget_filter=nugget_filter,
+        )
+        print(f"{judge_name}: Grading {len(grade_data)} document passages against nuggets...")
+        grade_data = run_dspy_batch_generic(
+            grade_data,
+            GradeNuggetAnswer,
+            GradeNuggetAnswer.convert_prompt_output,
+            full_config,
+        )
+        return grade_data, nuggets_per_topic
+
     def judge(
         self,
         rag_responses: Sequence[Report],
@@ -639,7 +684,10 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
         nugget_banks: Optional[NuggetBanksProtocol] = None,
         grade_threshold: int = 4,
         on_missing_evals: str = "fix_aggregate",
-        grade_text: Literal["response", "document", "document_paragraphs"] = "response",
+        grade_text: Literal[
+            "response", "document", "document_paragraphs",
+            "response_and_documents", "response_and_document_paragraphs",
+        ] = "response",
         filebase: str = "prefnugget",
         **kwargs
     ) -> Leaderboard:
@@ -650,34 +698,54 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
             raise ValueError(f"{judge_name} requires nugget_banks. Run create_nuggets first or provide --nugget-banks.")
 
         self.expected_topic_ids = [t.request_id for t in rag_topics]
+        full_config = _to_minima_config(llm_config)
 
-        # Prepare grading data
-        print(f"{judge_name}: Preparing grade data...")
+        combined_modes = {"response_and_documents", "response_and_document_paragraphs"}
+        doc_modes = {"document", "document_paragraphs"}
+
         if grade_text == "response":
-            grade_data, nuggets_per_topic = prepare_nugget_grade_data(rag_responses, nugget_banks)
-        else:
-            grade_data, nuggets_per_topic = prepare_nugget_grade_data_for_documents(
-                rag_responses, nugget_banks, use_paragraphs=(grade_text == "document_paragraphs")
+            grade_data, nuggets_per_topic = self._grade_response_passages(
+                rag_responses, nugget_banks, full_config)
+            aggregates = compute_nugget_aggregates(
+                grade_data, nuggets_per_topic, grade_threshold)
+
+        elif grade_text in doc_modes:
+            grade_data, nuggets_per_topic = self._grade_document_passages(
+                rag_responses, nugget_banks, full_config,
+                use_paragraphs=(grade_text == "document_paragraphs"),
+            )
+            aggregates = compute_nugget_aggregates_for_documents(
+                grade_data, nuggets_per_topic, grade_threshold)
+
+        elif grade_text in combined_modes:
+            # Phase A: response gate
+            response_grade_data, nuggets_per_topic = self._grade_response_passages(
+                rag_responses, nugget_banks, full_config)
+            survivors: Set[tuple[str, str, str]] = {
+                (d.run_id, d.query_id, d.nugget_id)
+                for d in response_grade_data if d.grade >= grade_threshold
+            }
+            print(
+                f"{judge_name}: {len(survivors)}/{len(response_grade_data)} "
+                f"nuggets passed response gate (grade >= {grade_threshold})"
             )
 
-        # Run LLM grading
-        print(f"{judge_name}: Grading responses...")
-        full_config = _to_minima_config(llm_config)
-        grade_data = run_dspy_batch_generic(
-            grade_data,
-            GradeNuggetAnswer,
-            GradeNuggetAnswer.convert_prompt_output,
-            full_config,
-        )
+            # Phase B: doc grading filtered to survivors
+            doc_grade_data, _ = self._grade_document_passages(
+                rag_responses, nugget_banks, full_config,
+                use_paragraphs=(grade_text == "response_and_document_paragraphs"),
+                nugget_filter=lambda run, topic, nug: (run, topic, nug) in survivors,
+            )
+            aggregates = compute_nugget_aggregates_combined(
+                response_grade_data, doc_grade_data, nuggets_per_topic, grade_threshold)
+            grade_data = doc_grade_data  # for nugget-doc export below
+
+        else:
+            raise ValueError(f"Unknown grade_text mode: {grade_text}")
+
         print(f"{judge_name}: Finished grading")
 
-        # Aggregate grades
-        if grade_text == "response":
-            aggregates = compute_nugget_aggregates(grade_data, nuggets_per_topic, grade_threshold)
-        else:
-            aggregates = compute_nugget_aggregates_for_documents(grade_data, nuggets_per_topic, grade_threshold)
-
-        # Export nugget-relevant documents (only for document-level grading)
+        # Export nugget-relevant documents (any document-level grading, including combined)
         if grade_text != "response":
             nugget_doc_topics = collect_nugget_relevant_docs(grade_data, grade_threshold)
             if nugget_doc_topics:

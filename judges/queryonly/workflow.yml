@@ -39,6 +39,12 @@ variants:
     judge_settings:
       grade_text: "document_paragraphs"
 
+  resp-and-docs: &qo-resp-and-docs
+    nugget_settings:
+      prompt: "prefnugget-baseline"
+    judge_settings:
+      grade_text: "response_and_document_paragraphs"
+
   # --- Old name aliases ---
   prefnugget-rubric-response: *qo-response
   prefnugget-rubric-docs: *qo-docs

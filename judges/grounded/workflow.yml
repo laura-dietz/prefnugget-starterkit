@@ -36,7 +36,7 @@ nugget_settings:
 
 judge_settings:
   grade_threshold: 4
-  grade_text: "response"  # "response" | "document" | "document_paragraphs"
+  grade_text: "response"  # "response" | "document" | "document_paragraphs" | "response_and_documents" | "response_and_document_paragraphs"
 
 variants:
 
@@ -61,6 +61,18 @@ variants:
       random_pairs: true
     judge_settings:
       grade_text: "document_paragraphs"
+
+  # --- Combined: response gate + document paragraphs ---
+
+  best-resp-and-docs: &gn-best-resp-and-docs
+    judge_settings:
+      grade_text: "response_and_document_paragraphs"
+
+  random-resp-and-docs: &gn-random-resp-and-docs
+    nugget_settings:
+      random_pairs: true
+    judge_settings:
+      grade_text: "response_and_document_paragraphs"
 
   # --- Backward compat (must_decide) ---
 

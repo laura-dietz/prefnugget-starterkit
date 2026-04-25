@@ -12,7 +12,7 @@ import re
 from collections import defaultdict
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Dict, List, Literal, Optional, Sequence, Set, Tuple
+from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Set, Tuple
 
 import dspy
 from pydantic import BaseModel
@@ -160,6 +160,7 @@ def prepare_nugget_grade_data_for_documents(
     nugget_banks: NuggetBanks,
     use_paragraphs: bool = False,
     document_ids: Optional[Set[str]] = None,
+    nugget_filter: Optional[Callable[[str, str, str], bool]] = None,
 ) -> tuple[List[NuggetGradeData], Dict[str, int]]:
     """
     Prepare grading data for document-nugget pairs.
@@ -174,6 +175,10 @@ def prepare_nugget_grade_data_for_documents(
                         in each document. If False, use full document text.
         document_ids: Optional set of document IDs to process. If None,
                       all documents are processed.
+        nugget_filter: Optional callable (run_id, topic_id, nugget_id) -> bool.
+                       When provided, only nuggets where the filter returns True
+                       are included. Used to skip doc-grading for nuggets that
+                       fail an upstream gate (e.g., low response grade).
 
     Returns:
         Tuple of (grade_data list, nuggets_per_topic dict)
@@ -220,10 +225,13 @@ def prepare_nugget_grade_data_for_documents(
                     unique_text.add(paragraph.strip())
                     for nugget in bank.nuggets_as_list():
                         if isinstance(nugget, NuggetQuestion):
+                            nugget_id = nugget.question_id or nugget.question
+                            if nugget_filter is not None and not nugget_filter(run_id, topic_id, nugget_id):
+                                continue
                             data = NuggetGradeData(
                                 run_id=run_id,
                                 query_id=topic_id,
-                                nugget_id=nugget.question_id or nugget.question,
+                                nugget_id=nugget_id,
                                 question=nugget.question,
                                 passage=paragraph.strip(),
                                 doc_id=doc_id,
@@ -237,10 +245,13 @@ def prepare_nugget_grade_data_for_documents(
                 unique_text.add(text.strip())
                 for nugget in bank.nuggets_as_list():
                     if isinstance(nugget, NuggetQuestion):
+                        nugget_id = nugget.question_id or nugget.question
+                        if nugget_filter is not None and not nugget_filter(run_id, topic_id, nugget_id):
+                            continue
                         data = NuggetGradeData(
                             run_id=run_id,
                             query_id=topic_id,
-                            nugget_id=nugget.question_id or nugget.question,
+                            nugget_id=nugget_id,
                             question=nugget.question,
                             passage=text.strip(),
                             doc_id=doc_id,
@@ -431,6 +442,47 @@ def compute_nugget_aggregates_for_documents(
             )
 
     return aggregates
+
+
+def compute_nugget_aggregates_combined(
+    response_grade_data: List[NuggetGradeData],
+    doc_grade_data: List[NuggetGradeData],
+    nuggets_per_topic: Dict[str, int],
+    grade_threshold: int = 3,
+) -> Dict[str, NuggetAggregateResult]:
+    """
+    Combined response + document/paragraph grading.
+
+    Per nugget:
+        combined = response_grade * max(doc_grade)   if response_grade >= grade_threshold
+        combined = 0                                  otherwise
+
+    Score is on a 0-25 scale (product of two 0-5 grades). "Covered" means
+    combined >= grade_threshold * 5 (so threshold=4 -> product>=20).
+
+    Expects doc_grade_data to be filtered upstream (no doc prompts issued for
+    nuggets that failed the response gate); missing doc grades are treated as 0.
+    """
+    # Max-pool doc grades per (run, topic, nugget) via existing aggregator
+    doc_aggs = compute_nugget_aggregates_for_documents(
+        doc_grade_data, nuggets_per_topic, grade_threshold
+    )
+
+    # Multiply per-nugget: combined = response_grade * max_doc_grade (gated to 0)
+    combined_data: List[NuggetGradeData] = []
+    for r in response_grade_data:
+        doc_agg = doc_aggs.get(f"{r.run_id}:{r.query_id}")
+        max_doc_grade = (
+            doc_agg.nugget_grades.get(r.nugget_id, {}).get("grade", 0)
+            if doc_agg else 0
+        )
+        combined = r.grade * max_doc_grade if r.grade >= grade_threshold else 0
+        combined_data.append(r.model_copy(update={"grade": combined}))
+
+    # Reuse the response-side aggregator with scaled-up threshold
+    return compute_nugget_aggregates(
+        combined_data, nuggets_per_topic, grade_threshold * 5
+    )
 
 
 # =============================================================================

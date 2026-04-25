@@ -67,12 +67,14 @@ variants:
   best-resp-and-docs: &gn-best-resp-and-docs
     judge_settings:
       grade_text: "response_and_document_paragraphs"
+      grade_threshold: 3
 
   random-resp-and-docs: &gn-random-resp-and-docs
     nugget_settings:
       random_pairs: true
     judge_settings:
       grade_text: "response_and_document_paragraphs"
+      grade_threshold: 3
 
   # --- Backward compat (must_decide) ---
 

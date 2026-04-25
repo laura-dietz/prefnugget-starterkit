@@ -125,7 +125,7 @@ variants:
       nugget_gen_order: both
       max_questions_per_pair: 2
     judge_settings:
-      grade_threshold: 4
+      grade_threshold: 3
       grade_text: "response_and_document_paragraphs"
 
   random-resp-and-docs: &pn-random-resp-and-docs
@@ -143,7 +143,7 @@ variants:
       max_questions_per_pair: 2
       random_pairs: true
     judge_settings:
-      grade_threshold: 4
+      grade_threshold: 3
       grade_text: "response_and_document_paragraphs"
 
   # --- Backward compat (must_decide) ---

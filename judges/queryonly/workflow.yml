@@ -27,11 +27,38 @@ variants:
 
   # --- Primary variants ---
 
+
+
   response: &qo-response
     nugget_settings:
       prompt: "prefnugget-baseline"
     judge_settings:
       grade_text: "response"
+
+  best-5: 
+    nugget_settings:
+      prompt: "prefnugget-baseline"
+      max_nuggets_per_topic: 5
+
+    judge_settings:
+      grade_text: "response"
+
+  best-10: 
+    nugget_settings:
+      prompt: "prefnugget-baseline"
+      max_nuggets_per_topic: 10
+
+    judge_settings:
+      grade_text: "response"
+
+  best-15: 
+    nugget_settings:
+      prompt: "prefnugget-baseline"
+      max_nuggets_per_topic: 15
+
+    judge_settings:
+      grade_text: "response"
+
 
   docs: &qo-docs
     nugget_settings:
@@ -49,3 +76,8 @@ variants:
   # --- Old name aliases ---
   prefnugget-rubric-response: *qo-response
   prefnugget-rubric-docs: *qo-docs
+
+  # --- generic names ---
+  best: *qo-response
+  best-docs: *qo-docs
+  best-resp-and-docs: *qo-resp-and-docs

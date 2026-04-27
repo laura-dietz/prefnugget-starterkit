@@ -46,28 +46,26 @@ variants:
     judge_settings:
       grade_text: "response"
 
-  best-5: &gn-best
+  best-5: 
     nugget_settings:
       max_nuggets_per_topic: 5
       stop_collecting_at_nuggets_per_topic: 5
     judge_settings:
       grade_text: "response"
 
-  best-10: &gn-best
+  best-10:
     nugget_settings:
       max_nuggets_per_topic: 10
       stop_collecting_at_nuggets_per_topic: 10
     judge_settings:
       grade_text: "response"
 
-  best-15: &gn-best
+  best-15: 
     nugget_settings:
       max_nuggets_per_topic: 15
       stop_collecting_at_nuggets_per_topic: 15
     judge_settings:
       grade_text: "response"
-
-
 
 
   best-docs: &gn-best-docs

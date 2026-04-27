@@ -56,7 +56,7 @@ variants:
       grade_threshold: 4
       grade_text: "response"
 
-  best-5: &pn-best
+  best-5:
     nugget_settings:
       num_others: 4
       num_pivot: 0
@@ -74,7 +74,7 @@ variants:
       grade_text: "response"
 
 
-  best-10: &pn-best
+  best-10:
     nugget_settings:
       num_others: 4
       num_pivot: 0
@@ -91,7 +91,7 @@ variants:
       grade_threshold: 4
       grade_text: "response"
 
-  best-15: &pn-best
+  best-15:
     nugget_settings:
       num_others: 4
       num_pivot: 0

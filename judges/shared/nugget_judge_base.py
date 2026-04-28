@@ -284,7 +284,7 @@ def load_preferences(path: Path) -> tuple[List[PrefJudgeData], Dict[str, PrefAgg
 def chunk_by_query(
     lst: List[Any],
     borda_scores: Dict[str, int],
-    nugget_gen_order: Literal["both", "winner", "as_provided"],
+    nugget_gen_order: Literal["both", "winner", "runner_up", "as_provided"],
     sort_key_fn: Callable[[Any, Dict[str, int]], float],
     num_per_query: int = 2,
     max_pairs_considered: int = -1,
@@ -329,6 +329,36 @@ def chunk_by_query(
                 key=lambda x: borda_scores.get(f"{x.winner_run_id}:{x.query_id}", 0),
                 reverse=True,
             )
+        elif nugget_gen_order == 'runner_up':
+            topic_lst_2 = sorted(
+                topic_lst,
+                key=lambda x: borda_scores.get(f"{x.loser_run_id}:{x.query_id}", 0),
+                reverse=True,
+            )
+            topic_lst_1 = sorted(
+                topic_lst_2,
+                key=lambda x: borda_scores.get(f"{x.winner_run_id}:{x.query_id}", 0),
+                reverse=True,
+            )
+            # sort order: winner: primary key, loser: secondary key.
+            # Sweep the sorted list; each sweep takes the first pair for each
+            # unique winner_run_id, deferring later pairs with the same winner
+            # to the next sweep. Sweep 1 = each winner vs its runner-up,
+            # sweep 2 = each winner vs its 2nd-best opponent, etc.
+            result: List[Any] = []
+            remaining = topic_lst_1
+            while remaining:
+                taken_winner: Set[str] = set()
+                next_remaining: List[Any] = []
+                for pair in remaining:
+                    if pair.winner_run_id in taken_winner:
+                        next_remaining.append(pair)
+                    else:
+                        result.append(pair)
+                        taken_winner.add(pair.winner_run_id)
+                remaining = next_remaining
+            topic_lst = result
+
         elif nugget_gen_order == 'as_provided':
             topic_lst = topic_lst
 

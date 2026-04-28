@@ -305,3 +305,52 @@ def test_chunk_by_query_max_pairs():
     # Only 3 items should be processed total
     total_items = sum(len(c) for c in chunks)
     assert total_items == 3
+
+
+def test_chunk_by_query_runner_up():
+    """runner_up mode sweeps the sorted list: sweep 1 = each winner vs its
+    runner-up (best loser), sweep 2 = each winner vs its 2nd-best loser, etc."""
+    from judges.shared.nugget_judge_base import chunk_by_query
+    from pydantic import BaseModel
+
+    class Item(BaseModel):
+        query_id: str
+        winner_run_id: str
+        loser_run_id: str
+
+    # 4 systems ranked r1 > r2 > r3 > r4 by borda.
+    borda = {"r1:t1": 4, "r2:t1": 3, "r3:t1": 2, "r4:t1": 1}
+
+    # All borda-consistent pairs in arbitrary input order.
+    items = [
+        Item(query_id="t1", winner_run_id="r2", loser_run_id="r4"),
+        Item(query_id="t1", winner_run_id="r1", loser_run_id="r4"),
+        Item(query_id="t1", winner_run_id="r3", loser_run_id="r4"),
+        Item(query_id="t1", winner_run_id="r1", loser_run_id="r2"),
+        Item(query_id="t1", winner_run_id="r2", loser_run_id="r3"),
+        Item(query_id="t1", winner_run_id="r1", loser_run_id="r3"),
+    ]
+
+    chunks = chunk_by_query(
+        items,
+        borda_scores=borda,
+        nugget_gen_order="runner_up",
+        sort_key_fn=lambda x, b: 0,  # unused for runner_up
+        num_per_query=2,
+    )
+
+    # Flatten chunks back into sequence; chunk_by_query preserves within-topic order.
+    flat = [p for chunk in chunks for p in chunk]
+    pairs = [(p.winner_run_id, p.loser_run_id) for p in flat]
+
+    assert pairs == [
+        # sweep 1: each winner vs its runner-up
+        ("r1", "r2"),
+        ("r2", "r3"),
+        ("r3", "r4"),
+        # sweep 2: each winner vs its 2nd-best loser
+        ("r1", "r3"),
+        ("r2", "r4"),
+        # sweep 3: r1's 3rd-best loser
+        ("r1", "r4"),
+    ]

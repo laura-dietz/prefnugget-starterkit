@@ -614,6 +614,7 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
             )
             tracker = QuestionTracker()
             extraction_result_data = list()
+            total_prompts = 0
 
             for chunk_idx, extraction_chunk in enumerate(extraction_data_chunks):
                 # Skip prompts for topics that already have enough questions
@@ -621,6 +622,8 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
 
                 if not extraction_chunk:
                     continue
+
+                total_prompts += len(extraction_chunk)
 
                 # Set questions so far
                 for data in extraction_chunk:
@@ -643,7 +646,7 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
 
                 print(f"-- {judge_name}: Finished extracting nuggets pass {chunk_idx}. Questions:\n{_print_tracker(tracker)}")
 
-            print(f"{judge_name}: Finished extracting nuggets")
+            print(f"{judge_name}: Finished extracting nuggets ({total_prompts} prompts)")
             print(f"Question counts: {dict(tracker.items())}")
 
         else:
@@ -655,7 +658,8 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
                     convert_output,
                     full_config,
                 )
-                print(f"{judge_name}: Finished extracting nuggets")
+                total_prompts = len(extraction_data)
+                print(f"{judge_name}: Finished extracting nuggets ({total_prompts} prompts)")
             else:
                 print("not supported")
                 print(f"{judge_name}: Finished extracting nuggets")

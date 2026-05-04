@@ -5,6 +5,7 @@ Rubric-based AutoJudge that:
 2. Grades how well each response answers each nugget (judge)
 3. Derives evaluation score from nugget coverage
 """
+from pathlib import Path
 from textwrap import dedent
 import dspy
 import json
@@ -337,6 +338,9 @@ class RubricJudge(AutoJudge):
         nugget_banks: Optional[NuggetBanksProtocol] = None,
         rag_responses: Optional[Sequence[Report]] = None,
         max_nuggets_per_topic: Optional[int] = None,
+        # Standard output path settings (auto-filled by judge_runner)
+        filebase: str = "default",
+        outdir: Path = Path("."),
         **kwargs
     ) -> Optional[NuggetBanksProtocol]:
         """Generate nugget questions for each topic using LLM."""
@@ -407,6 +411,9 @@ class RubricJudge(AutoJudge):
         rag_topics: Sequence[Request],
         llm_config: LlmConfigBase,
         nugget_banks: Optional[NuggetBanksProtocol] = None,
+        # Standard output path settings (auto-filled by judge_runner)
+        filebase: str = "default",
+        outdir: Path = Path("."),
         **kwargs
     ) -> Optional[Qrels]:
         """Rubric judge does not produce qrels."""
@@ -419,7 +426,9 @@ class RubricJudge(AutoJudge):
         llm_config: LlmConfigBase,
         nugget_banks: Optional[NuggetBanksProtocol] = None,
         grade_threshold: int = 3,
+        # Standard output path settings (auto-filled by judge_runner)
         filebase: str = "rubric",
+        outdir: Path = Path("."),
         **kwargs
     ) -> Leaderboard:
         """

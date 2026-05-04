@@ -32,6 +32,7 @@ from autojudge_base import (
     format_preview,
 )
 from autojudge_base.nugget_data import NuggetBanks, write_nugget_banks
+from autojudge_base.workflow.paths import resolve_any_file_path
 from minima_llm import MinimaLlmConfig
 from minima_llm.dspy_adapter import run_dspy_batch_generic
 
@@ -534,6 +535,7 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
         random_pairs: bool = False,
         pref_input: Optional[str] = None,
         filebase: str = "default",
+        outdir: Path = Path("."),
         **kwargs,
     ) -> Optional[NuggetBanksProtocol]:
         """Extract nuggets using the template method pattern.
@@ -577,7 +579,8 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
             grade_data, aggregates = result
 
             # Save Phase 1 checkpoint
-            save_preferences(grade_data, aggregates, Path(f"{filebase}.preferences.jsonl"))
+            pref_path = resolve_any_file_path(outdir / filebase, "preferences", "jsonl")
+            save_preferences(grade_data, aggregates, pref_path)
 
             # Step 2: Extract data from aggregates
             extraction_data = self._extract_data_from_aggregates(aggregates, rag_responses, rag_topic_dict)

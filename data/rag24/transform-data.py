@@ -3,6 +3,8 @@ from hashlib import md5
 from pathlib import Path
 import json
 import gzip
+from tqdm import tqdm
+import ir_datasets
 
 EXPECTED_MD5 = "918bb96e714eec2e3a0c64d0771a6a6f"
 
@@ -33,6 +35,7 @@ def extract_responses():
     run_ids = set()
     topic_ids = set()
     run_id_to_responses = {}
+    ds = ir_datasets.load("msmarco-segment-v2.1").docs_store()
 
     for response in read_all_lines():
         run_ids.add(response["run_id"])
@@ -60,7 +63,12 @@ def extract_responses():
     for run_id in run_id_to_responses.keys():
         assert len(run_id_to_responses[run_id]) > 19, run_id
         with open(f"runs/generation/{run_id}.jsonl", "w") as f:
-            for response in run_id_to_responses[run_id]:
+            for response in tqdm(run_id_to_responses[run_id]):
+                docs = {}
+                for r in response["references"]:
+                    doc = ds.get(r)
+                    docs[r] = {"id": r, "text": doc.default_text(), "title": doc.title}
+                response["documents"] = docs
                 f.write(json.dumps(response) + "\n")
 
 

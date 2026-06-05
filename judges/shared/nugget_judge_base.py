@@ -690,6 +690,7 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
             GradeNuggetAnswer.convert_prompt_output,
             full_config,
         )
+        
         return grade_data, nuggets_per_topic
 
     def _grade_document_passages(
@@ -730,6 +731,8 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
             "response_and_documents", "response_and_document_paragraphs",
         ] = "response",
         filebase: str = "prefnugget",
+        outdir: Path = Path("."),
+        config_name: str ="default",
         **kwargs
     ) -> Leaderboard:
         """Grade each response against all nuggets for its topic."""
@@ -793,6 +796,12 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
                 write_nugget_docs_collaborator(nugget_doc_topics, Path(f"{filebase}.nugget-docs"))
                 doc_banks = nugget_docs_to_nugget_banks(nugget_doc_topics)
                 write_nugget_banks(doc_banks, Path(f"{filebase}.nugget-docs.nuggets.jsonl"))
+        # dump individual grades
+        nugget_grades_path = resolve_any_file_path(outdir/config_name, f"nugget-grades", "jsonl")
+        with open(nugget_grades_path, "w", encoding="utf-8") as gradef:
+            for grade_d in grade_data:
+                gradef.write(grade_d.model_dump_json() + "\n")
+
 
         # Update Report.evaldata
         for response in rag_responses:

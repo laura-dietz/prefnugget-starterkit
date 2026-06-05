@@ -88,11 +88,11 @@ axioms: dict[str, Axiom[GenerationInput, GenerationOutput]] = {
     "CONS3-0.5": CONS3(margin_fraction=0.5),
     #
     # Correctness axioms
-    "CORR1-0.75": CORR1(margin_fraction=0.75),
+    #"CORR1-0.75": CORR1(margin_fraction=0.75),
     #
     # Clarity axioms
-    "CLAR1-0.5": CLAR1(margin_fraction=0.5),
-    "CLAR2-0.5": CLAR2(margin_fraction=0.5),
+    #"CLAR1-0.5": CLAR1(margin_fraction=0.5),
+    #"CLAR2-0.5": CLAR2(margin_fraction=0.5),
 }
 
 def group_by_topic_id(rag_responses: Sequence[Report]) -> Dict[str, Dict[str, str]]:

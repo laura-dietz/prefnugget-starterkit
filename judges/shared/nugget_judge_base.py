@@ -797,7 +797,7 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
                 doc_banks = nugget_docs_to_nugget_banks(nugget_doc_topics)
                 write_nugget_banks(doc_banks, Path(f"{filebase}.nugget-docs.nuggets.jsonl"))
         # dump individual grades
-        nugget_grades_path = resolve_any_file_path(outdir/config_name, f"nugget-grades", "jsonl")
+        nugget_grades_path = resolve_any_file_path(Path(filebase), f"nugget-grades", "jsonl")
         with open(nugget_grades_path, "w", encoding="utf-8") as gradef:
             for grade_d in grade_data:
                 gradef.write(grade_d.model_dump_json() + "\n")

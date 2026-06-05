@@ -604,50 +604,54 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
         convert_output = self._make_convert_output(max_questions_per_pair)
 
         if iterative_nuggets:
-            extraction_data_chunks = chunk_by_query(
-                extraction_data,
-                borda_scores=borda_scores,
-                nugget_gen_order="as_provided" if random_pairs else nugget_gen_order,
-                sort_key_fn=self._get_sort_key_fn(),
-                num_per_query=gen_batch_num_per_query,
-                max_pairs_considered=max_pairs_considered,
-            )
-            tracker = QuestionTracker()
-            extraction_result_data = list()
-            total_prompts = 0
-
-            for chunk_idx, extraction_chunk in enumerate(extraction_data_chunks):
-                # Skip prompts for topics that already have enough questions
-                extraction_chunk = [d for d in extraction_chunk if not tracker.is_done(d.query_id)]
-
-                if not extraction_chunk:
-                    continue
-
-                total_prompts += len(extraction_chunk)
-
-                # Set questions so far
-                for data in extraction_chunk:
-                    self._set_exam_questions(data, tracker.questions(data.query_id))
-
-                # Run LLM extraction
-                full_config = _to_minima_config(llm_config)
-                extraction_chunk = run_dspy_batch_generic(
-                    data=extraction_chunk,
-                    signature=self._get_extraction_signature(),
-                    converter=convert_output,
-                    llm_config=full_config,
+            nugget_extraction_trace_path = resolve_any_file_path(outdir / filebase, "nugget-extraction-trace", "jsonl")
+            with open(nugget_extraction_trace_path, "w", encoding="utf-8") as exf:
+                extraction_data_chunks = chunk_by_query(
+                    extraction_data,
+                    borda_scores=borda_scores,
+                    nugget_gen_order="as_provided" if random_pairs else nugget_gen_order,
+                    sort_key_fn=self._get_sort_key_fn(),
+                    num_per_query=gen_batch_num_per_query,
+                    max_pairs_considered=max_pairs_considered,
                 )
+                tracker = QuestionTracker()
+                extraction_result_data = list()
+                total_prompts = 0
 
-                for data in extraction_chunk:
-                    tracker.add_all(data.query_id, self._get_extracted_questions(data))
+                for chunk_idx, extraction_chunk in enumerate(extraction_data_chunks):
+                    # Skip prompts for topics that already have enough questions
+                    extraction_chunk = [d for d in extraction_chunk if not tracker.is_done(d.query_id)]
 
-                tracker.check_all_done(stop_at_count=stop_collecting_at_nuggets_per_topic)
-                extraction_result_data.extend(extraction_chunk)
+                    if not extraction_chunk:
+                        continue
 
-                print(f"-- {judge_name}: Finished extracting nuggets pass {chunk_idx}. Questions:\n{_print_tracker(tracker)}")
+                    total_prompts += len(extraction_chunk)
 
-            print(f"{judge_name}: Finished extracting nuggets ({total_prompts} prompts)")
-            print(f"Question counts: {dict(tracker.items())}")
+                    # Set questions so far
+                    for data in extraction_chunk:
+                        self._set_exam_questions(data, tracker.questions(data.query_id))
+
+                    # Run LLM extraction
+                    full_config = _to_minima_config(llm_config)
+                    extraction_chunk = run_dspy_batch_generic(
+                        data=extraction_chunk,
+                        signature=self._get_extraction_signature(),
+                        converter=convert_output,
+                        llm_config=full_config,
+                    )
+
+                    for data in extraction_chunk:
+                        exf.write(data.model_dump_json() + "\n")
+                        tracker.add_all(data.query_id, self._get_extracted_questions(data))
+                        
+
+                    tracker.check_all_done(stop_at_count=stop_collecting_at_nuggets_per_topic)
+                    extraction_result_data.extend(extraction_chunk)
+
+                    print(f"-- {judge_name}: Finished extracting nuggets pass {chunk_idx}. Questions:\n{_print_tracker(tracker)}")
+
+                print(f"{judge_name}: Finished extracting nuggets ({total_prompts} prompts)")
+                print(f"Question counts: {dict(tracker.items())}")
 
         else:
             if self._supports_non_iterative():

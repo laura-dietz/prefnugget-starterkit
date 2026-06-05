@@ -70,7 +70,7 @@ class IterativeExtractDifferentiatingNuggets(dspy.Signature):
 
       From given_exam_questions, identify or generate questions the Winner addresses much better than the Loser.
       Reuse questions where possible. New differentiating_questions must be brief, 
-      atomic questions about information the Winner handels much better.
+      atomic questions about information the Winner handles much better.
 
       Avoid generic quality questions. 
       Make questions self-contained (e.g., "Capital of France?" not "The capital?").

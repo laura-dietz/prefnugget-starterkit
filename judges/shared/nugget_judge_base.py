@@ -65,10 +65,10 @@ from judges.shared.rubric_common import (
 # =============================================================================
 
 PREFNUGGET_SPEC = LeaderboardSpec(measures=(
-    MeasureSpec("NUGGET_COVERAGE"),
-    MeasureSpec("AVG_GRADE"),
-    MeasureSpec("MAX_GRADE"),
-    MeasureSpec("COVERED_COUNT"),
+    MeasureSpec("NUGGET_COVERAGE", description="Fraction of nuggets covered by the response (0.0-1.0)"),
+    MeasureSpec("AVG_GRADE", description="Average grade across covered nuggets"),
+    MeasureSpec("MAX_GRADE", description="Maximum grade among covered nuggets"),
+    MeasureSpec("COVERED_COUNT", int, description="Number of nuggets covered by the response"),
 ))
 
 

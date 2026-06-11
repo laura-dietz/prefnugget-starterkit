@@ -6,8 +6,8 @@ RUN apt-get update \
 
 RUN pip3 install uv
 
-ADD judges /auto-judge/judges
 ADD pyproject.toml /auto-judge/
+ADD judges /auto-judge/judges
 
 WORKDIR /auto-judge
 

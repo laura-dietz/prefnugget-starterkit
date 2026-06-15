@@ -327,6 +327,10 @@ auto-judge-evaluate meta-evaluate \
 
 ## Submission to TIRA
 
+The repo contains three approaches (attention, the last one is not yet supported).
+Please remove the `--dry-run` flag to make the actual submission.
+The first two approaches queryonly and grounded can be submitted via (the prefnugget submission command will be added soon):
+
 ```
 export OPENAI_API_KEY=...
 export OPENAI_BASE_URL=...
@@ -337,7 +341,7 @@ tira-cli code-submission \
 	--path . \
 	--forward-environment-variable OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL \
 	--task trec-auto-judge \
-	--dataset kiddie-20260403-training \
+	--dataset kiddie-20260605-training \
 	--command 'auto-judge run --workflow /auto-judge/judges/queryonly/workflow.yml --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
 
 tira-cli code-submission \
@@ -345,16 +349,8 @@ tira-cli code-submission \
 	--path . \
 	--forward-environment-variable OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL \
 	--task trec-auto-judge \
-	--dataset kiddie-20260403-training \
+	--dataset kiddie-20260605-training \
 	--command 'auto-judge run --workflow /auto-judge/judges/grounded/workflow.yml --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
-	
-tira-cli code-submission \
-	--dry-run \
-	--path . \
-	--forward-environment-variable OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL \
-	--task trec-auto-judge \
-	--dataset kiddie-20260403-training \
-	--command 'auto-judge run --workflow /auto-judge/judges/prefnugget/workflow.yml --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
 ```
 
 ## License

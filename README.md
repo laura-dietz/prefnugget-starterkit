@@ -329,7 +329,7 @@ auto-judge-evaluate meta-evaluate \
 
 The repo contains three approaches.
 Please remove the `--dry-run` flag to make the actual submission.
-Submit the approaches to tira via:
+The following example shows how the `queryonly` and the `grounded` variant are submitted in their default variant, and `prefnugget` is submitted in the `iter20bothties-few` variant:
 
 ```
 export OPENAI_API_KEY=...

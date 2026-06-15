@@ -65,10 +65,10 @@ from judges.shared.rubric_common import (
 # =============================================================================
 
 PREFNUGGET_SPEC = LeaderboardSpec(measures=(
-    MeasureSpec("NUGGET_COVERAGE"),
-    MeasureSpec("AVG_GRADE"),
-    MeasureSpec("MAX_GRADE"),
-    MeasureSpec("COVERED_COUNT"),
+    MeasureSpec("NUGGET_COVERAGE", description="Fraction of nuggets covered by the response (0.0-1.0)"),
+    MeasureSpec("AVG_GRADE", description="Average grade across covered nuggets"),
+    MeasureSpec("MAX_GRADE", description="Maximum grade among covered nuggets"),
+    MeasureSpec("COVERED_COUNT", int, description="Number of nuggets covered by the response"),
 ))
 
 
@@ -604,50 +604,54 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
         convert_output = self._make_convert_output(max_questions_per_pair)
 
         if iterative_nuggets:
-            extraction_data_chunks = chunk_by_query(
-                extraction_data,
-                borda_scores=borda_scores,
-                nugget_gen_order="as_provided" if random_pairs else nugget_gen_order,
-                sort_key_fn=self._get_sort_key_fn(),
-                num_per_query=gen_batch_num_per_query,
-                max_pairs_considered=max_pairs_considered,
-            )
-            tracker = QuestionTracker()
-            extraction_result_data = list()
-            total_prompts = 0
-
-            for chunk_idx, extraction_chunk in enumerate(extraction_data_chunks):
-                # Skip prompts for topics that already have enough questions
-                extraction_chunk = [d for d in extraction_chunk if not tracker.is_done(d.query_id)]
-
-                if not extraction_chunk:
-                    continue
-
-                total_prompts += len(extraction_chunk)
-
-                # Set questions so far
-                for data in extraction_chunk:
-                    self._set_exam_questions(data, tracker.questions(data.query_id))
-
-                # Run LLM extraction
-                full_config = _to_minima_config(llm_config)
-                extraction_chunk = run_dspy_batch_generic(
-                    data=extraction_chunk,
-                    signature=self._get_extraction_signature(),
-                    converter=convert_output,
-                    llm_config=full_config,
+            nugget_extraction_trace_path = resolve_any_file_path(outdir / filebase, "nugget-extraction-trace", "jsonl")
+            with open(nugget_extraction_trace_path, "w", encoding="utf-8") as exf:
+                extraction_data_chunks = chunk_by_query(
+                    extraction_data,
+                    borda_scores=borda_scores,
+                    nugget_gen_order="as_provided" if random_pairs else nugget_gen_order,
+                    sort_key_fn=self._get_sort_key_fn(),
+                    num_per_query=gen_batch_num_per_query,
+                    max_pairs_considered=max_pairs_considered,
                 )
+                tracker = QuestionTracker()
+                extraction_result_data = list()
+                total_prompts = 0
 
-                for data in extraction_chunk:
-                    tracker.add_all(data.query_id, self._get_extracted_questions(data))
+                for chunk_idx, extraction_chunk in enumerate(extraction_data_chunks):
+                    # Skip prompts for topics that already have enough questions
+                    extraction_chunk = [d for d in extraction_chunk if not tracker.is_done(d.query_id)]
 
-                tracker.check_all_done(stop_at_count=stop_collecting_at_nuggets_per_topic)
-                extraction_result_data.extend(extraction_chunk)
+                    if not extraction_chunk:
+                        continue
 
-                print(f"-- {judge_name}: Finished extracting nuggets pass {chunk_idx}. Questions:\n{_print_tracker(tracker)}")
+                    total_prompts += len(extraction_chunk)
 
-            print(f"{judge_name}: Finished extracting nuggets ({total_prompts} prompts)")
-            print(f"Question counts: {dict(tracker.items())}")
+                    # Set questions so far
+                    for data in extraction_chunk:
+                        self._set_exam_questions(data, tracker.questions(data.query_id))
+
+                    # Run LLM extraction
+                    full_config = _to_minima_config(llm_config)
+                    extraction_chunk = run_dspy_batch_generic(
+                        data=extraction_chunk,
+                        signature=self._get_extraction_signature(),
+                        converter=convert_output,
+                        llm_config=full_config,
+                    )
+
+                    for data in extraction_chunk:
+                        exf.write(data.model_dump_json() + "\n")
+                        tracker.add_all(data.query_id, self._get_extracted_questions(data))
+                        
+
+                    tracker.check_all_done(stop_at_count=stop_collecting_at_nuggets_per_topic)
+                    extraction_result_data.extend(extraction_chunk)
+
+                    print(f"-- {judge_name}: Finished extracting nuggets pass {chunk_idx}. Questions:\n{_print_tracker(tracker)}")
+
+                print(f"{judge_name}: Finished extracting nuggets ({total_prompts} prompts)")
+                print(f"Question counts: {dict(tracker.items())}")
 
         else:
             if self._supports_non_iterative():
@@ -686,6 +690,7 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
             GradeNuggetAnswer.convert_prompt_output,
             full_config,
         )
+        
         return grade_data, nuggets_per_topic
 
     def _grade_document_passages(
@@ -726,6 +731,8 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
             "response_and_documents", "response_and_document_paragraphs",
         ] = "response",
         filebase: str = "prefnugget",
+        outdir: Path = Path("."),
+        config_name: str ="default",
         **kwargs
     ) -> Leaderboard:
         """Grade each response against all nuggets for its topic."""
@@ -789,6 +796,12 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
                 write_nugget_docs_collaborator(nugget_doc_topics, Path(f"{filebase}.nugget-docs"))
                 doc_banks = nugget_docs_to_nugget_banks(nugget_doc_topics)
                 write_nugget_banks(doc_banks, Path(f"{filebase}.nugget-docs.nuggets.jsonl"))
+        # dump individual grades
+        nugget_grades_path = resolve_any_file_path(Path(filebase), f"nugget-grades", "jsonl")
+        with open(nugget_grades_path, "w", encoding="utf-8") as gradef:
+            for grade_d in grade_data:
+                gradef.write(grade_d.model_dump_json() + "\n")
+
 
         # Update Report.evaldata
         for response in rag_responses:

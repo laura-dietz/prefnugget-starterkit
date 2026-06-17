@@ -468,17 +468,6 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
 
     # -- Shared implementations --
 
-    def create_qrels(
-        self,
-        rag_responses: Sequence[Report],
-        rag_topics: Sequence[Request],
-        llm_config: LlmConfigBase,
-        nugget_banks: Optional[NuggetBanksProtocol] = None,
-        **kwargs
-    ) -> Optional[Qrels]:
-        """Nugget judges do not produce qrels."""
-        return None
-
     def filter_non_topic_responses(self, rag_responses: Sequence[Report], topic_ids: Set[str]) -> Sequence[Report]:
         broken: bool = False
         broken_run_ids = []
@@ -672,6 +661,24 @@ class NuggetJudgeBase(AutoJudge, abc.ABC):
         # Build NuggetBanks from results
         questions_by_topic = self._flatten_extraction_results(extraction_result_data, rag_topic_dict)
         return build_nugget_banks(questions_by_topic, max_per_topic=max_nuggets_per_topic)
+
+
+
+    # Grading with a nugget bank
+
+
+    def create_qrels(
+    self,
+        rag_responses: Sequence[Report],
+        rag_topics: Sequence[Request],
+        llm_config: LlmConfigBase,
+        nugget_banks: Optional[NuggetBanksProtocol] = None,
+        **kwargs
+    ) -> Optional[Qrels]:
+        """Nugget judges do not produce qrels."""
+        return None
+
+
 
     def _grade_response_passages(
         self,

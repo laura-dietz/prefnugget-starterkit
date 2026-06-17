@@ -47,6 +47,8 @@ class NuggetGradeData(BaseModel):
     grade: int = 0
     reasoning: Optional[str] = None
     confidence: Optional[float] = None
+    # Optional: verbatim quote from passage that addresses the nugget (for grades 4-5)
+    addressed_quote: Optional[str] = None
 
 
 # =============================================================================

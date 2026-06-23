@@ -16,6 +16,7 @@ tira-cli code-submission \
     --dry-run \
     --path . \
     --cache-behaviour deterministic \
+    --mount-cache '$CACHE_DIR=EMPTY_DIR' \
     --task trec-auto-judge \
     --dataset kiddie-20260605-training \
     --forward-environment-variable OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL \

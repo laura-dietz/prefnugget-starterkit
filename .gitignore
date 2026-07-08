@@ -3,6 +3,9 @@ __pycache__
 test-coverage
 .coverage
 *.egg-info/
+*cache*
 out/
 output/
 output-kiddie/
+output-*/
+tests/golden-traces/

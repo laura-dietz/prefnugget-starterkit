@@ -3,12 +3,13 @@
 Run a judge workflow against multiple datasets.
 
 Usage:
-    python run_all_datasets.py --workflow judges/naive/workflow.yml
-    python run_all_datasets.py --workflow judges/naive/workflow.yml --datasets my_datasets.yml
-    python run_all_datasets.py --workflow judges/naive/workflow.yml --runs prio1
-    python run_all_datasets.py --workflow judges/naive/workflow.yml --topics assessed
+    python run_all_datasets.py --workflow judges/prefnugget/workflow.yml --variant iter20bothties-few
+    python run_all_datasets.py --workflow judges/prefnugget/workflow.yml --datasets my_datasets.yml
+    python run_all_datasets.py --workflow judges/prefnugget/workflow.yml --runs prio1
+    python run_all_datasets.py --workflow judges/prefnugget/workflow.yml --topics assessed
 """
 
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -25,6 +26,8 @@ class Dataset:
     topics: str                 # Path to topics file
     prio1_runs: List[str] = field(default_factory=list)      # Run IDs for --runs prio1
     assessed_topics: List[str] = field(default_factory=list)  # Topic IDs for --topics assessed
+    truth: str | None = None    # Optional: path to truth leaderboard for meta-evaluation
+    corpus: str | None = None   # Optional (recommended): document corpus path or ir-datasets ID
 
 
 def load_datasets(config_path: Path) -> List[Dataset]:
@@ -40,8 +43,36 @@ def load_datasets(config_path: Path) -> List[Dataset]:
             topics=entry["topics"],
             prio1_runs=entry.get("prio1_runs", []) or [],
             assessed_topics=entry.get("assessed_topics", []) or [],
+            truth=entry.get("truth"),
+            corpus=entry.get("corpus"),
         ))
     return datasets
+
+
+def run_meta_evaluate(dataset: Dataset, dataset_out: Path) -> None:
+    """Invoke auto-judge-evaluate meta-evaluate against the dataset's truth file, if available."""
+    if not dataset.truth:
+        print(f"Skipping meta-evaluation for {dataset.name}: no 'truth' in datasets.yml")
+        return
+    if shutil.which("auto-judge-evaluate") is None:
+        print("Skipping meta-evaluation: auto-judge-evaluate not installed.")
+        print("Install with: uv pip install -e '.[evaluate]'")
+        return
+    eval_files: List[Path] = sorted(dataset_out.glob("*.eval.txt"))
+    if not eval_files:
+        print(f"Skipping meta-evaluation for {dataset.name}: no *.eval.txt in {dataset_out}")
+        return
+
+    cmd: List[str] = [
+        "auto-judge-evaluate", "meta-evaluate",
+        "--truth-leaderboard", dataset.truth,
+        "--truth-format", "ir_measures", "--truth-header",
+        "--eval-format", "ir_measures",
+        "--on-missing", "default",
+        *[str(p) for p in eval_files],
+    ]
+    print(f"\n=== Meta-evaluation: {dataset.name} (truth={dataset.truth}) ===")
+    subprocess.run(cmd)
 
 
 def run_workflow(
@@ -52,6 +83,7 @@ def run_workflow(
     topics_filter: str,
     extra_args: List[str],
     variant: str | None = None,
+    meta_evaluate: bool = False,
 ) -> bool:
     """Run the workflow against a single dataset. Returns True on success."""
     # Include runs/topics (and variant, if set) in output path to separate results
@@ -68,6 +100,12 @@ def run_workflow(
     ]
     if variant:
         cmd.extend(["--variant", variant])
+
+    # Add corpus (optional but recommended)
+    if dataset.corpus:
+        cmd.extend(["--corpus", dataset.corpus])
+    else:
+        print(f"Note: no 'corpus' configured for {dataset.name} in datasets.yml (recommended for nugget/qrels/judge that consult source documents)")
 
     # Add run filtering
     if runs_filter == "prio1" and dataset.prio1_runs:
@@ -93,6 +131,16 @@ def run_workflow(
     print(f"{'='*60}\n")
 
     result: subprocess.CompletedProcess[bytes] = subprocess.run(cmd)
+    if result.returncode == 0:
+        produced: List[Path] = sorted(p for p in dataset_out.iterdir() if p.is_file())
+        print(f"\n=== Output files in {dataset_out} ({len(produced)}) ===")
+        if produced:
+            for p in produced:
+                print(f"  {p.name}")
+        else:
+            print("  (no files produced)")
+        if meta_evaluate:
+            run_meta_evaluate(dataset, dataset_out)
     return result.returncode == 0
 
 
@@ -104,6 +152,7 @@ def main() -> None:
     parser.add_argument("--datasets", "-d", default="datasets.yml", help="Path to datasets.yml config (default: datasets.yml)")
     parser.add_argument("--out-dir", "-o", default="./output", help="Base output directory")
     parser.add_argument("--variant", "-v", default=None, help="Workflow variant to run (optional; omit to use the workflow's default)")
+    parser.add_argument("--meta-evaluate", action="store_true", help="After each run, invoke auto-judge-evaluate meta-evaluate against the dataset's 'truth' file (if set in datasets.yml)")
     parser.add_argument(
         "--runs", "-r",
         choices=["all", "prio1"],
@@ -116,6 +165,8 @@ def main() -> None:
         default="all",
         help="Which topics to evaluate: all (default) or assessed (uses assessed_topics from config)"
     )
+    parser.add_argument("--dataset", "-D", action="append", default=[], metavar="NAME",
+                        help="Restrict to dataset(s) by name (repeatable). Default: all datasets in the config.")
     parser.add_argument("--dry-run", action="store_true", help="Print commands without executing")
     parser.add_argument("--keep-going", "-k", action="store_true", help="Continue on errors instead of failing fast")
 
@@ -137,6 +188,17 @@ def main() -> None:
 
     all_datasets: List[Dataset] = load_datasets(datasets_path)
     out_dir: Path = Path(args.out_dir)
+
+    # Restrict to user-specified dataset names (if any)
+    if args.dataset:
+        known_names: set[str] = {d.name for d in all_datasets}
+        unknown: List[str] = [n for n in args.dataset if n not in known_names]
+        if unknown:
+            print(f"Error: unknown dataset name(s): {', '.join(unknown)}", file=sys.stderr)
+            print(f"Available: {', '.join(sorted(known_names))}", file=sys.stderr)
+            sys.exit(1)
+        requested: set[str] = set(args.dataset)
+        all_datasets = [d for d in all_datasets if d.name in requested]
 
     # Filter datasets that have the required filter lists
     datasets: List[Dataset] = []
@@ -183,6 +245,10 @@ def main() -> None:
             ]
             if args.variant:
                 cmd_parts.append(f"--variant {args.variant}")
+            if dataset.corpus:
+                cmd_parts.append(f"--corpus {dataset.corpus}")
+            else:
+                print(f"  Note: no 'corpus' configured for {dataset.name}")
             if args.runs == "prio1" and dataset.prio1_runs:
                 cmd_parts.append(f"--run {' --run '.join(dataset.prio1_runs)}")
             if args.topics == "assessed" and dataset.assessed_topics:
@@ -197,7 +263,7 @@ def main() -> None:
     key_suffix: str = f"-{args.variant}" if args.variant else "-default"
     for dataset in datasets:
         key: str = f"{dataset.name}{key_suffix}-{args.runs}-{args.topics}"
-        success: bool = run_workflow(workflow, dataset, out_dir, args.runs, args.topics, extra, variant=args.variant)
+        success: bool = run_workflow(workflow, dataset, out_dir, args.runs, args.topics, extra, variant=args.variant, meta_evaluate=args.meta_evaluate)
         results[key] = "OK" if success else "FAILED"
 
         # Fail fast unless --keep-going

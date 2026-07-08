@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "prefnugget-starterkit"
-version = "0.3.16"
+version = "0.3.18"
 description = "PrefNugget, GroundedNugget, and QueryOnlyNugget AutoJudge implementations"
 readme = "README.md"
 license = {text = "MIT"}
@@ -27,7 +27,8 @@ classifiers = [
 ]
 
 dependencies = [
-    "autojudge-base>=0.3.16",
+    "autojudge-base>=0.3.18",
+    "tira>=0.0.100",
     "tqdm>=4.0",
     "minima-llm>=0.2.4",
     "dspy>=3.0",
@@ -39,7 +40,7 @@ test = [
     "pytest-cov>=4.0",
 ]
 evaluate = [
-    "autojudge-evaluate>=0.3.16",
+    "autojudge-evaluate>=0.3.18",
 ]
 
 [project.urls]

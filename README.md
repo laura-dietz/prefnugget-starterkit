@@ -327,7 +327,9 @@ auto-judge-evaluate meta-evaluate \
 
 ## Submission to TIRA
 
-The repo contains three approaches.
+The repo contains three approaches. Here how to submit them to TIRA.
+See the [general submission HowTo](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/README.md) for the full process (account setup, `tira-cli` install, authentication, and the clean-repo requirement).
+
 Please remove the `--dry-run` flag to make the actual submission.
 The following example shows how the `queryonly` and the `grounded` variant are submitted in their default variant, and `prefnugget` is submitted in the `iter20bothties-few` variant:
 
@@ -339,6 +341,8 @@ export OPENAI_MODEL=...
 tira-cli code-submission \
 	--dry-run \
 	--path . \
+	--cache-behaviour deterministic \
+	--mount-cache '$CACHE_DIR=EMPTY_DIR' \
 	--forward-environment-variable OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL \
 	--task trec-auto-judge \
 	--dataset kiddie-20260605-training \
@@ -347,6 +351,8 @@ tira-cli code-submission \
 tira-cli code-submission \
 	--dry-run \
 	--path . \
+	--cache-behaviour deterministic \
+	--mount-cache '$CACHE_DIR=EMPTY_DIR' \
 	--forward-environment-variable OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL \
 	--task trec-auto-judge \
 	--dataset kiddie-20260605-training \
@@ -355,6 +361,8 @@ tira-cli code-submission \
 tira-cli code-submission \
 	--dry-run \
 	--path . \
+	--cache-behaviour deterministic \
+	--mount-cache '$CACHE_DIR=EMPTY_DIR' \
 	--forward-environment-variable OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL \
 	--task trec-auto-judge \
 	--dataset kiddie-20260605-training \

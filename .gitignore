@@ -3,9 +3,16 @@ __pycache__
 test-coverage
 .coverage
 *.egg-info/
+.venv/
 *cache*
 out/
 output/
 output-kiddie/
 output-*/
+results/
+*.zip
 tests/golden-traces/
+tmp-*.eval.txt
+combined.eval.txt
+*.nugget-grades.jsonl
+*.preferences.jsonl

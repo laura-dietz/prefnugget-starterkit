@@ -1,4 +1,3 @@
-# docker build -t ghcr.io/mam10eks/prefnugget-starterkit/judge:0.0.1 .
 # The base image is build from https://github.com/OpenWebSearch/wows-code/blob/main/ecir26/template-new-approach/Dockerfile.dev
 FROM ghcr.io/openwebsearch/wows-code/ecir-2026-pyterrier:latest
 

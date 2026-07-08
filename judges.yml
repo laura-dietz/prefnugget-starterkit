@@ -1,63 +1,94 @@
-styles:
-  colors:
-    pairwise: "#7B2D8E"    # dark purple
-    grounded: "#87CEEB"    # medium sky blue
-    query:    "#C6F752"    # lime green
-  hatches:
-    best:     ""
-    random:   ".."
-    na:       ""
-    response: ""
-    docs:     "//"
+# Documentation for all Judges
+#
+# Each documentation of a judge needs:
+#   name: The name of the judge
+#   description: A description of the overall idea of the judge
+#   git_remotes: A list of git remotes to which a judge belongs to the judge.
+#   measures: The list of measures provided by the Judge, each with a name and description
+#
+# NOTE: Drafted by Claude from the judges' MeasureSpec definitions
+# (judges/shared/nugget_judge_base.py, judges/queryonly/rubric_autojudge.py) and
+# the README. Please review the wording before publishing.
+# The measure names/descriptions mirror the auto-generated {filebase}.measures.yml.
 
 judges:
 
-  tmp-iter20bothties-few.eval:
-    name: PrefNugget
-    nugget: pairwise
-    preference: best
-    graded: response
+  PrefNugget:
+    description: |
+      PrefNugget evaluates Retrieval Augmented Generation responses with nugget
+      questions that are extracted contrastively. First, responses are ranked by
+      pairwise LLM preference judgments, aggregated into a Borda score over swapped
+      A/B comparisons. Next, differentiating nugget questions are extracted from
+      winner/loser passage pairs, capturing the information that distinguishes better
+      responses from worse ones. Finally, each response is graded on how well it
+      answers the resulting nugget questions. Described in the paper "Too Many
+      Questions?".
 
-  tmp-iter20bothties-few-docs.eval:
-    name: PrefNugget docs
-    nugget: pairwise
-    preference: best
-    graded: docs
+      References:
+      [1] - https://anonymous.4open.science/r/too-many-questions/
 
-  tmp-iter20bothties-few-random-pairs.eval:
-    name: PrefNugget random
-    nugget: pairwise
-    preference: random
-    graded: response
+    git_remotes: ["git@github.com:laura-dietz/prefnugget-starterkit.git"]
 
-  tmp-iter20bothties-few-docs-random-pairs.eval:
-    name: PrefNugget random docs
-    nugget: pairwise
-    preference: random
-    graded: docs
+    measures:
+      - name: NUGGET_COVERAGE
+        description: Fraction of nuggets covered by the response (0.0-1.0).
 
+      - name: AVG_GRADE
+        description: Average grade across covered nuggets.
 
-  tmp-ground-ground-response.eval:
-    name: GroundedNugget best
-    nugget: grounded
-    preference: best
-    graded: response
+      - name: MAX_GRADE
+        description: Maximum grade among covered nuggets.
 
-  tmp-ground-ground-random-response.eval:
-    name: GroundedNugget random
-    nugget: grounded
-    preference: random
-    graded: response
+      - name: COVERED_COUNT
+        description: Number of nuggets covered by the response.
 
-  tmp-prefnugget-rubric-response.eval:
-    name: QueryOnlyNugget
-    nugget: query
-    preference: na
-    graded: response
+  GroundedNugget:
+    description: |
+      GroundedNugget shares PrefNugget's pairwise preference ranking and
+      nugget-based grading, but extracts nugget questions grounded in individual
+      top-ranked responses rather than from contrastive winner/loser pairs. This
+      yields nuggets tied to what strong responses actually assert. Described in the
+      paper "Too Many Questions?".
 
+      References:
+      [1] - https://anonymous.4open.science/r/too-many-questions/
 
-  tmp-prefnugget-rubric-docs.eval:
-    name: QueryOnlyNugget
-    nugget: query
-    preference: na
-    graded: docs
+    git_remotes: ["git@github.com:laura-dietz/prefnugget-starterkit.git"]
+
+    measures:
+      - name: NUGGET_COVERAGE
+        description: Fraction of nuggets covered by the response (0.0-1.0).
+
+      - name: AVG_GRADE
+        description: Average grade across covered nuggets.
+
+      - name: MAX_GRADE
+        description: Maximum grade among covered nuggets.
+
+      - name: COVERED_COUNT
+        description: Number of nuggets covered by the response.
+
+  QueryOnlyNugget:
+    description: |
+      QueryOnlyNugget generates nugget questions from the query alone (title,
+      background, and problem statement) without consulting any responses, then
+      grades each response against those parametric nuggets. It serves as a
+      query-only rubric baseline. Described in the paper "Too Many Questions?".
+
+      References:
+      [1] - https://anonymous.4open.science/r/too-many-questions/
+
+    git_remotes: ["git@github.com:laura-dietz/prefnugget-starterkit.git"]
+
+    measures:
+      - name: NUGGET_COVERAGE
+        description: Fraction of nuggets covered by the response (0.0-1.0).
+
+      - name: AVG_GRADE
+        description: Average grade across covered nuggets.
+
+      - name: MAX_GRADE
+        description: Maximum grade among covered nuggets.
+
+      - name: COVERED_COUNT
+        description: Number of nuggets covered by the response.

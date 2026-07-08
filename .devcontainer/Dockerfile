@@ -14,7 +14,7 @@ RUN apt-get install -y build-essential g++ gcc make python3-dev
 
 RUN uv venv --python 3.11 /auto-judge/.venv \
 	&& . /auto-judge/.venv/bin/activate \
-	&& uv pip install -e .[all]
+	&& uv pip install -e .
 
 ENV PATH=/auto-judge/.venv/bin/:${PATH}
 

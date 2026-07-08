@@ -82,24 +82,6 @@ class ExtractAddressedQuote(dspy.Signature):
             extracted = None
             confidence = 0.0
 
-        # Strip surrounding quotes if LLM added them anyway
-        if extracted:
-            extracted = extracted.strip()
-            while len(extracted) >= 2 and (
-                (extracted.startswith('"') and extracted.endswith('"')) or
-                (extracted.startswith("'") and extracted.endswith("'"))
-            ):
-                extracted = extracted[1:-1].strip()
-
-        # Validate: quote must actually exist in the passage (whitespace-normalized)
-        if extracted and data.passage:
-            norm_passage = " ".join(data.passage.split())
-            norm_quote = " ".join(extracted.split())
-            if norm_quote.lower() not in norm_passage.lower():
-                # Quote doesn't exist in passage - LLM fabricated/combined text
-                extracted = None
-                confidence = 0.0
-
         # Only set if confidence is reasonable
         if extracted and confidence > 0.2:
             data.addressed_quote = extracted

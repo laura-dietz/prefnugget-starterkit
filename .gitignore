@@ -16,3 +16,5 @@ tmp-*.eval.txt
 combined.eval.txt
 *.nugget-grades.jsonl
 *.preferences.jsonl
+build/
+CLAUDE.md

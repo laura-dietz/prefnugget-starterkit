@@ -341,6 +341,8 @@ tira-cli code-submission \
 	--path . \
 	--forward-environment-variable OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL \
 	--task trec-auto-judge \
+	--cache-behaviour deterministic \
+	--mount-cache '$CACHE_DIR=EMPTY_DIR' \
 	--dataset kiddie-20260605-training \
 	--command 'auto-judge run --workflow /auto-judge/judges/queryonly/workflow.yml --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
 
@@ -349,6 +351,8 @@ tira-cli code-submission \
 	--path . \
 	--forward-environment-variable OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL \
 	--task trec-auto-judge \
+	--cache-behaviour deterministic \
+	--mount-cache '$CACHE_DIR=EMPTY_DIR' \
 	--dataset kiddie-20260605-training \
 	--command 'auto-judge run --workflow /auto-judge/judges/grounded/workflow.yml --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
 
@@ -357,6 +361,8 @@ tira-cli code-submission \
 	--path . \
 	--forward-environment-variable OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL \
 	--task trec-auto-judge \
+	--cache-behaviour deterministic \
+	--mount-cache '$CACHE_DIR=EMPTY_DIR' \
 	--dataset kiddie-20260605-training \
 	--command 'auto-judge run --workflow /auto-judge/judges/prefnugget/workflow.yml --variant iter20bothties-few --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
 ```

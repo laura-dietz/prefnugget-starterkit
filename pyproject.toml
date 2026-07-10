@@ -40,14 +40,11 @@ test = [
 minima-llm = [
     "minima-llm>=0.2.0",
 ]
-pyterrier = [
-    "python-terrier>=0.10",
-]
 evaluate = [
     "autojudge-evaluate>=0.3.18",
 ]
 all = [
-    "auto-judge-starterkit[minima-llm,pyterrier,evaluate,test]",
+    "auto-judge-starterkit[minima-llm,evaluate,test]",
 ]
 
 [project.urls]

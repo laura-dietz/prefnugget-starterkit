@@ -96,7 +96,6 @@ If you want to be selective in installing tools
 
 * Auto-Judge Meta-Evaluation tools   `uv pip install -e ".[evaluate]"`
 * Lightweight batteries-included LLM client (used by TinyJudge)   `uv pip install -e ".[minima-llm]"`
-* PyTerrier retrieval  (used by PyTerrier retrieval judge) `uv pip install -e ".[pyterrier]"`
 * Pytest unittest infrastructure `uv pip install -e ".[test]"  `
 
 ### Add your own Dependencies
@@ -246,15 +245,6 @@ A simple baseline judge that scores based on:
 - Response text length
 - Deterministic random score (for baseline comparison)
 
-### PyTerrier Retrieval Judge (`judges/pyterrier_retrieval/`)
-
-Uses PyTerrier retrieval models to score responses:
-- Indexes responses per topic
-- Runs multiple weighting models (BM25, TF-IDF, etc.)
-- Ranks responses by retrieval score
-
-Requires the `pyterrier` optional dependency.
-
 ## Test Dataset: kiddie (`data/kiddie/`)
 
 A small **synthetic dataset** for development and testing:
@@ -361,7 +351,6 @@ auto-judge-starterkit/
 │   ├── complete_example/    # Full protocol example (nuggets, qrels, leaderboard)
 │   ├── naive/               # Simple baseline judge
 │   ├── tinyjudge/           # Minimal LLM judge example
-│   └── pyterrier_retrieval/ # PyTerrier retrieval judge
 ├── data/
 │   └── kiddie/              # Synthetic test dataset
 ├── documentation/           # Submission guide

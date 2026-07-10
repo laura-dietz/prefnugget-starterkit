@@ -29,9 +29,8 @@ jobs:
 
       - name: Download Cache From TIRA
         run: |
-        wget 'https://www.tira.io/task/trec-auto-judge/user/webis/dataset/kiddie-20260605-training/download/2026-07-10-08-52-33.zip'
-        unzip -j 2026-07-10-08-52-33.zip '2026-07-10-08-52-33/CACHE_DIR/*' -d example-cache-kiddie
-
+          wget 'https://www.tira.io/task/trec-auto-judge/user/webis/dataset/kiddie-20260605-training/download/2026-07-10-08-52-33.zip'
+          unzip -j 2026-07-10-08-52-33.zip '2026-07-10-08-52-33/CACHE_DIR/*' -d example-cache-kiddie
       - name: Test judges/queryonly
         run: |
           export OPENAI_API_KEY=ignore

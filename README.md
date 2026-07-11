@@ -339,7 +339,7 @@ auto-judge-evaluate meta-evaluate \
 ## Submission to TIRA
 
 The repo contains three approaches. Here how to submit them to TIRA.
-The canonical [Submit to TIRA](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/submit-to-tira.md) page covers the full process (account setup, `tira-cli` install, authentication, requirements) — the commands below only add the judge-specific workflow and `--variant` values.
+The canonical [Submit to TIRA](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/07-submit-to-tira.md) page covers the full process (account setup, `tira-cli` install, authentication, requirements) — the commands below only add the judge-specific workflow and `--variant` values.
 
 Please remove the `--dry-run` flag to make the actual submission.
 The following examples submit each judge in the `best` variant; `prefnugget` uses the `best-decide-plum` variant:

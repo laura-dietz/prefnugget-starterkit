@@ -7,7 +7,7 @@ description: Set up a development environment for the PrefNugget judges. Use whe
 
 Walk the developer through this **interactively, one step at a time**. After each step, report what you found or did, then confirm before moving on.
 
-The **canonical instructions live in the [TREC AutoJudge Participant HowTo](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/README.md)** — this skill drives its pages [setup-environment](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/setup-environment.md), [configure-llm-endpoint](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/configure-llm-endpoint.md), and [run-workflows](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/run-workflows.md); defer to them and do not contradict them. This repo's README holds the judge-specific reference (variants, pseudocode, prompts). For submitting, use `/autojudge-submit`.
+The **canonical instructions live in the [TREC AutoJudge Participant HowTo](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/README.md)** — this skill drives its pages [setup-environment](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/01-setup-environment.md), [configure-llm-endpoint](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/02-configure-llm-endpoint.md), and [run-workflows](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/04-run-workflows.md); defer to them and do not contradict them. This repo's README holds the judge-specific reference (variants, pseudocode, prompts). For submitting, use `/autojudge-submit`.
 
 ## Step 1 — Create and activate a virtual environment
 ```bash
@@ -23,7 +23,7 @@ uv pip install -e '.[all]'
 The `.[all]` extra covers develop + test + evaluate + submit. The lightweight `uv pip install -e .` (judge only, no tira/pytest) works for a first look; switch to `.[all]` before testing or submitting.
 
 ## Step 3 — Configure the LLM endpoint
-These judges call an LLM, so set the endpoint per [configure-llm-endpoint](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/configure-llm-endpoint.md):
+These judges call an LLM, so set the endpoint per [configure-llm-endpoint](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/02-configure-llm-endpoint.md):
 ```bash
 export OPENAI_BASE_URL=...  OPENAI_MODEL=...  OPENAI_API_KEY=...
 export CACHE_DIR="./cache"   # optional, enables prompt caching
@@ -44,4 +44,4 @@ auto-judge run --workflow judges/prefnugget/workflow.yml --variant best \
     --rag-topics data/kiddie/topics/kiddie-topics.jsonl \
     --out-dir ./output-kiddie/
 ```
-For dev flags, variants, and output files see [run-workflows](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/run-workflows.md); when ready to submit, use `/autojudge-submit`.
+For dev flags, variants, and output files see [run-workflows](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/04-run-workflows.md); when ready to submit, use `/autojudge-submit`.

@@ -291,7 +291,7 @@ Given `filebase: "myjudge"` and `--out-dir ./output/`:
 
 ## 7. Meta-Evaluation
 
-Install the evaluation extra:
+Install the evaluation extra (or `.[all]` to be safe):
 
 ```bash
 uv pip install -e '.[evaluate]'

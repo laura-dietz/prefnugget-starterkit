@@ -39,15 +39,19 @@ test = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
 ]
+# Everything needed to connect to / submit to TIRA. Submitting requires the test
+# suite to pass, so this bundles the test tooling as well.
 tira = [
+    "prefnugget-starterkit[test]",
     "tira>=0.0.100",
 ]
 evaluate = [
     "autojudge-evaluate>=0.3.18",
 ]
-# Recommended default setup: judge + tests + submission tooling + evaluation
+# Recommended default setup: judge + submission tooling (incl. tests) + evaluation.
+# Documentation should always point users at this target to be safe.
 all = [
-    "prefnugget-starterkit[test,tira,evaluate]",
+    "prefnugget-starterkit[tira,evaluate]",
     "tqdm>=4.0",
 ]
 

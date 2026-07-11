@@ -61,7 +61,7 @@ if command -v auto-judge-evaluate &>/dev/null; then
 else
     echo ""
     echo "Skipping meta-evaluation (auto-judge-evaluate not installed)."
-    echo "Install with: uv pip install -e '.[evaluate]'"
+    echo "Install with: uv pip install -e '.[evaluate]'  (or '.[all]' to be safe)"
 fi
 
 echo ""

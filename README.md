@@ -22,8 +22,12 @@ judge — no `tira`, no `pytest`, no Docker required:
 uv pip install -e .        # judge only
 ```
 
-Add the pieces when you need them: `.[test]` (pytest), `.[tira]` (TIRA submission),
-`.[evaluate]` (local meta-evaluation), or `.[all]` for everything.
+When you are ready to test, submit, or evaluate, install the full setup — always
+use `.[all]` to be sure you have everything:
+
+```bash
+uv pip install -e ".[all]"
+```
 
 ### LLM Configuration
 
@@ -300,7 +304,7 @@ prefnugget-starterkit/
 
 ### Local meta-evaluation (on kiddie)
 
-Requires `uv pip install -e ".[evaluate]"` (see [Setup](#setup)).
+Requires `uv pip install -e ".[evaluate]"` (or `.[all]` to be safe; see [Setup](#setup)).
 
 ```bash
 auto-judge-evaluate meta-evaluate \

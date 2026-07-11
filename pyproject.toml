@@ -29,7 +29,6 @@ classifiers = [
 dependencies = [
     "autojudge-base>=0.3.18",
     "tira>=0.0.100",
-    "tqdm>=4.0",
 ]
 
 [project.optional-dependencies]
@@ -45,6 +44,7 @@ evaluate = [
 ]
 all = [
     "auto-judge-starterkit[minima-llm,evaluate,test]",
+    "tqdm>=4.0",
 ]
 
 [project.urls]

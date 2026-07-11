@@ -11,12 +11,19 @@ Built on the [TREC AutoJudge](https://trec-auto-judge.cs.unh.edu/) framework.
 uv venv
 source .venv/bin/activate
 
-# Install the package (editable mode)
-uv pip install -e .
-
-# Optional: install evaluation tools for local meta-evaluation
-uv pip install -e ".[evaluate]"
+# Recommended: full setup (judge + tests + submission tooling + eval)
+uv pip install -e ".[all]"
 ```
+
+**Struggling to install the test/submission tooling?** Start coding with just the
+judge — no `tira`, no `pytest`, no Docker required:
+
+```bash
+uv pip install -e .        # judge only
+```
+
+Add the pieces when you need them: `.[test]` (pytest), `.[tira]` (TIRA submission),
+`.[evaluate]` (local meta-evaluation), or `.[all]` for everything.
 
 ### LLM Configuration
 

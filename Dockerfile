@@ -6,7 +6,7 @@ ADD pyproject.toml /auto-judge/
 
 WORKDIR /auto-judge
 
-RUN uv pip install -e .
+RUN uv pip install -e .[all]
 # only needed so that we have an additional connection to the git metadata
 ADD .git /auto-judge/
 

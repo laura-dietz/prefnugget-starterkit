@@ -2,7 +2,7 @@
 
 Nugget-based LLM judge implementations for evaluating RAG systems, as described in our paper ["Too Many Questions?"](https://anonymous.4open.science/r/too-many-questions/).
 
-Built on the [TREC AutoJudge](https://trec-auto-judge.cs.unh.edu/) framework.
+Built on the [TREC AutoJudge](https://trec-auto-judge.cs.unh.edu/) framework. The [TREC AutoJudge Participant HowTo](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/README.md) is the canonical guide for setup, LLM configuration, running, caching, meta-evaluation, and submission — this README covers only what is specific to the PrefNugget judges. In [Claude Code](https://docs.anthropic.com/en/docs/claude-code), `/autojudge-setup` and `/autojudge-submit` walk you through setup and submission interactively.
 
 ## Setup
 
@@ -339,7 +339,7 @@ auto-judge-evaluate meta-evaluate \
 ## Submission to TIRA
 
 The repo contains three approaches. Here how to submit them to TIRA.
-See the [general submission HowTo](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/README.md) for the full process (account setup, `tira-cli` install, authentication, and the clean-repo requirement).
+The canonical [Submit to TIRA](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/submit-to-tira.md) page covers the full process (account setup, `tira-cli` install, authentication, requirements) — the commands below only add the judge-specific workflow and `--variant` values.
 
 Please remove the `--dry-run` flag to make the actual submission.
 The following examples submit each judge in the `best` variant; `prefnugget` uses the `best-decide-plum` variant:

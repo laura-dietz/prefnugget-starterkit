@@ -2,7 +2,7 @@
 
 Nugget-based LLM judge implementations for evaluating RAG systems, as described in our paper ["Too Many Questions?"](https://anonymous.4open.science/r/too-many-questions/).
 
-Built on the [TREC AutoJudge](https://trec-auto-judge.cs.unh.edu/) framework. The [TREC AutoJudge Participant HowTo](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/README.md) is the canonical guide for setup, LLM configuration, running, caching, meta-evaluation, and submission — this README covers only what is specific to the PrefNugget judges. In [Claude Code](https://docs.anthropic.com/en/docs/claude-code), `/autojudge-setup` and `/autojudge-submit` walk you through setup and submission interactively.
+Built on the [TREC AutoJudge](https://trec-auto-judge.cs.unh.edu/) framework. The [TREC AutoJudge Participant HowTo](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/README.md) is the canonical guide for setup, LLM configuration, running, caching, meta-evaluation, and submission — this README covers only what is specific to the PrefNugget judges. In [Claude Code](https://docs.anthropic.com/en/docs/claude-code), three skills cover every activity interactively: `/autojudge-setup` (environment + LLM endpoint), `/autojudge-develop` (modify, run, cache, meta-evaluate), and `/autojudge-submit` (TIRA submission).
 
 ## Setup
 

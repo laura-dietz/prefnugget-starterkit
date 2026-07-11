@@ -44,4 +44,4 @@ auto-judge run --workflow judges/prefnugget/workflow.yml --variant best \
     --rag-topics data/kiddie/topics/kiddie-topics.jsonl \
     --out-dir ./output-kiddie/
 ```
-For dev flags, variants, and output files see [run-workflows](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/04-run-workflows.md); when ready to submit, use `/autojudge-submit`.
+For modifying judges, running variants, cache debugging, and meta-evaluation, hand off to `/autojudge-develop`; when ready to submit, use `/autojudge-submit`.

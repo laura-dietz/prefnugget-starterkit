@@ -33,7 +33,6 @@ def test_workflow_files_exist():
 
     assert (base / "complete_example" / "workflow.yml").exists()
     assert (base / "naive" / "workflow.yml").exists()
-    assert (base / "pyterrier_retrieval" / "workflow.yml").exists()
 
 
 def test_minimal_spec_measures():

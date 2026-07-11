@@ -331,7 +331,7 @@ The repo contains three approaches. Here how to submit them to TIRA.
 See the [general submission HowTo](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/README.md) for the full process (account setup, `tira-cli` install, authentication, and the clean-repo requirement).
 
 Please remove the `--dry-run` flag to make the actual submission.
-The following example shows how the `queryonly` and the `grounded` variant are submitted in their default variant, and `prefnugget` is submitted in the `iter20bothties-few` variant:
+The following examples submit each judge in the `best` variant; `prefnugget` uses the `best-decide-plum` variant:
 
 ```
 export OPENAI_API_KEY=...
@@ -346,7 +346,7 @@ tira-cli code-submission \
 	--forward-environment-variable OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL \
 	--task trec-auto-judge \
 	--dataset kiddie-20260605-training \
-	--command 'auto-judge run --workflow /auto-judge/judges/queryonly/workflow.yml --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
+	--command 'auto-judge run --workflow /auto-judge/judges/queryonly/workflow.yml --variant best --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
 
 tira-cli code-submission \
 	--dry-run \
@@ -356,7 +356,7 @@ tira-cli code-submission \
 	--forward-environment-variable OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL \
 	--task trec-auto-judge \
 	--dataset kiddie-20260605-training \
-	--command 'auto-judge run --workflow /auto-judge/judges/grounded/workflow.yml --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
+	--command 'auto-judge run --workflow /auto-judge/judges/grounded/workflow.yml --variant best --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
 
 tira-cli code-submission \
 	--dry-run \
@@ -366,7 +366,7 @@ tira-cli code-submission \
 	--forward-environment-variable OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL \
 	--task trec-auto-judge \
 	--dataset kiddie-20260605-training \
-	--command 'auto-judge run --workflow /auto-judge/judges/prefnugget/workflow.yml --variant iter20bothties-few --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
+	--command 'auto-judge run --workflow /auto-judge/judges/prefnugget/workflow.yml --variant best-decide-plum --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
 ```
 
 ## License

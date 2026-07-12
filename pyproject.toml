@@ -29,7 +29,7 @@ classifiers = [
 # Core: only what is needed to import and run the judge. This lets users who
 # struggle to set up the submission/test tooling start coding with `pip install -e .`
 dependencies = [
-    "autojudge-base>=0.3.18",
+    "autojudge-base>=0.4.0",
     "minima-llm>=0.2.4",
     "dspy>=3.0",
 ]
@@ -46,7 +46,7 @@ tira = [
     "tira>=0.0.100",
 ]
 evaluate = [
-    "autojudge-evaluate>=0.3.18",
+    "autojudge-evaluate>=0.4.0",
 ]
 # Recommended default setup: judge + submission tooling (incl. tests) + evaluation.
 # Documentation should always point users at this target to be safe.

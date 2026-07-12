@@ -39,7 +39,6 @@ export OPENAI_API_KEY="sk-..."
 export CACHE_DIR="./cache"  # optional, enables prompt caching
 ```
 
-Or use a config file: `auto-judge run --llm-config llm-config.yml ...`
 
 ## Quick Start
 
@@ -357,7 +356,7 @@ tira-cli code-submission \
 	--forward-environment-variable OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL \
 	--task trec-auto-judge \
 	--dataset kiddie-20260605-training \
-	--command 'auto-judge run --llm-config llm-config.yml --submission --workflow /auto-judge/judges/queryonly/workflow.yml --variant best --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
+	--command 'auto-judge run --workflow /auto-judge/judges/queryonly/workflow.yml --variant best --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
 
 tira-cli code-submission \
 	--dry-run \
@@ -367,7 +366,7 @@ tira-cli code-submission \
 	--forward-environment-variable OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL \
 	--task trec-auto-judge \
 	--dataset kiddie-20260605-training \
-	--command 'auto-judge run --llm-config llm-config.yml --submission --workflow /auto-judge/judges/grounded/workflow.yml --variant best --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
+	--command 'auto-judge run --workflow /auto-judge/judges/grounded/workflow.yml --variant best --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
 
 tira-cli code-submission \
 	--dry-run \
@@ -377,7 +376,7 @@ tira-cli code-submission \
 	--forward-environment-variable OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL \
 	--task trec-auto-judge \
 	--dataset kiddie-20260605-training \
-	--command 'auto-judge run --llm-config llm-config.yml --submission --workflow /auto-judge/judges/prefnugget/workflow.yml --variant best-decide-plum --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
+	--command 'auto-judge run --workflow /auto-judge/judges/prefnugget/workflow.yml --variant best-decide-plum --rag-responses $inputDataset/runs/*/ --rag-topics $inputDataset/topics/*.jsonl --out-dir $outputDir'
 ```
 
 ## License

@@ -136,12 +136,6 @@ def save_nugget_grades(grades: List[NuggetGradeData], path: Path) -> None:
     help="Output nugget-grades.jsonl file with addressed_quote field",
 )
 @click.option(
-    "--llm-config",
-    type=click.Path(exists=True, path_type=Path),
-    default=None,
-    help="Path to LLM config YAML file",
-)
-@click.option(
     "--min-grade",
     type=int,
     default=4,
@@ -156,16 +150,12 @@ def save_nugget_grades(grades: List[NuggetGradeData], path: Path) -> None:
 def main(
     input_path: Path,
     output_path: Path,
-    llm_config: Optional[Path],
     min_grade: int,
     min_passage_length: int,
 ) -> None:
     """Extract addressed quotes from high-grade nugget passages."""
     # Load LLM config
-    if llm_config:
-        config = MinimaLlmConfig.from_yaml(llm_config)
-    else:
-        config = MinimaLlmConfig.from_env()
+    config = MinimaLlmConfig.from_env()
 
     click.echo(f"Using LLM: {config.model}")
 

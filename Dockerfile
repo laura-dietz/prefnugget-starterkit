@@ -7,7 +7,10 @@ ADD llm-config.yml /auto-judge/
 
 WORKDIR /auto-judge
 
-RUN uv pip install -e .[all]
-# only needed so that we have an additional connection to the git metadata
-ADD .git /auto-judge/
+# Install into the base image's /venv (its PATH runs /venv/bin) — a --system
+# or ambiguous install would be invisible at runtime.
+RUN . /venv/bin/activate && uv pip install -e .[all]
+
+# git metadata for provenance (tira's runtime stats look for a repo at ./)
+ADD .git /auto-judge/.git
 

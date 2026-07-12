@@ -22,7 +22,7 @@ auto-judge run --workflow judges/prefnugget/workflow.yml --variant best \
     --rag-topics data/kiddie/topics/kiddie-topics.jsonl \
     --out-dir ./output-kiddie/
 ```
-During iteration prefer `--limit-topics 2` or `--topic ID`, and `-S/-N/-J KEY=VALUE` for quick overrides ([full flag table](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/04-run-workflows.md)). Confirm the expected outputs appear (`<variant>.eval.txt`, `.nuggets.jsonl`, `.config.yml`); in `.nuggets.jsonl`, questions live under `nugget_bank` as a mapping keyed by nugget id, not a list. Keep `pytest` green as you go — passing tests are a submission requirement.
+During iteration prefer `--limit-topics 2` or `--topic ID`, and `-S/-N/-J KEY=VALUE` for quick overrides ([full flag table](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/04-run-workflows.md)). Confirm the expected outputs appear (`<variant>.eval.txt`, `.nuggets.jsonl`, `.config.yml`); in `.nuggets.jsonl`, questions live under `nugget_bank` as a mapping keyed by nugget id, not a list. Keep `pytest` green as you go — the suite checks every git-tracked judge for minimum framework compatibility, and passing tests are a submission requirement.
 
 ## Step 4 — Keep the prompt cache warm
 With `CACHE_DIR` set, re-runs should be near-instant. If they are not, diagnose per [prompt-cache](https://github.com/trec-auto-judge/.github/blob/main/profile/howto/05-prompt-cache.md): check prompt determinism first (responses sorted by `run_id` before pairing), then trace with `MINIMA_TRACE_FILE=trace.jsonl` and diff the canonical JSON between runs. Use `CACHE_FORCE_REFRESH=1` when fresh answers are wanted.

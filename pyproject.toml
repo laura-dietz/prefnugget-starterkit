@@ -30,7 +30,7 @@ classifiers = [
 # struggle to set up the submission/test tooling start coding with `pip install -e .`
 dependencies = [
     "autojudge-base>=0.4.0",
-    "minima-llm>=0.2.4",
+    "minima-llm>=0.2.5",
     "dspy>=3.0",
 ]
 

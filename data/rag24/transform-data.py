@@ -5,7 +5,7 @@ import json
 import gzip
 try:
     from tqdm import tqdm
-except ImportError:  # tqdm is optional; fall back to a no-op progress wrapper
+except ImportError:  # tqdm ships in the [all] extra; fall back to a no-op wrapper
     def tqdm(iterable, *args, **kwargs):
         return iterable
 import ir_datasets
